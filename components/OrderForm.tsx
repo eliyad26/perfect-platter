@@ -9,11 +9,19 @@ import type {
   PlatterConfig,
   PlatterSize,
 } from "@/lib/types";
-import { DAY_LABELS, PAYMENT_LABELS } from "@/lib/types";
+import {
+  DAY_LABELS,
+  PAYMENT_LABELS,
+  PLATTER_LABELS,
+  fruitLabel,
+  uiText,
+} from "@/lib/i18n";
+import { useI18n } from "@/components/I18nProvider";
 
 type Step = 1 | 2 | 3 | 4 | "success";
 
 export function OrderForm() {
+  const { lang } = useI18n();
   const [platters, setPlatters] = useState<PlatterConfig[]>([]);
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,11 +50,11 @@ export function OrderForm() {
       setPlatters(data.platters);
       setDelivery(data.delivery);
     } catch {
-      setError("לא הצלחנו לטעון את התפריט. נסו לרענן את הדף.");
+      setError(uiText("loadingMenuError", lang));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     loadData();
@@ -85,11 +93,13 @@ export function OrderForm() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "שגיאה בשליחה");
+      if (!res.ok) throw new Error(data.error || uiText("orderSubmitError", lang));
       setOrderId(data.order.id);
       setStep("success");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "שגיאה בשליחה");
+      setError(
+        e instanceof Error ? e.message : uiText("orderSubmitError", lang)
+      );
     } finally {
       setSubmitting(false);
     }
@@ -109,19 +119,21 @@ export function OrderForm() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-3xl">
           ✓
         </div>
-        <h2 className="text-2xl font-bold text-stone-900">ההזמנה התקבלה!</h2>
+        <h2 className="text-2xl font-bold text-stone-900">
+          {uiText("orderSuccessTitle", lang)}
+        </h2>
         <p className="mt-2 text-stone-600">
-          מספר הזמנה: <strong>#{orderId}</strong>
+          {uiText("orderSuccessId", lang)}: <strong>#{orderId}</strong>
         </p>
         <p className="mt-4 text-stone-600">
-          ניצור איתכם קשר בקרוב לאישור. תודה שבחרתם בנו!
+          {uiText("orderSuccessBody", lang)}
         </p>
         <button
           type="button"
           className="btn-primary mt-8"
           onClick={() => window.location.reload()}
         >
-          הזמנה נוספת
+          {uiText("orderAnother", lang)}
         </button>
       </div>
     );
@@ -129,7 +141,7 @@ export function OrderForm() {
 
   return (
     <div className="space-y-8">
-      <StepIndicator current={step} />
+      <StepIndicator current={step} lang={lang} />
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
@@ -139,9 +151,9 @@ export function OrderForm() {
 
       {step === 1 && (
         <section>
-          <h2 className="section-title mb-2">בחרו את גודל המגש</h2>
+          <h2 className="section-title mb-2">{uiText("choosePlatter", lang)}</h2>
           <p className="mb-6 text-stone-600">
-            כל המגשים מורכבים מפירות העונה הטריים ביותר
+            {uiText("choosePlatterHint", lang)}
           </p>
           <div className="grid gap-4 sm:grid-cols-3">
             {platters.map((platter) => (
@@ -163,7 +175,7 @@ export function OrderForm() {
                   {platter.imageUrl ? (
                     <Image
                       src={platter.imageUrl}
-                      alt={platter.nameHe}
+                      alt={PLATTER_LABELS[lang][platter.size].title}
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, 33vw"
@@ -175,16 +187,16 @@ export function OrderForm() {
                   )}
                 </div>
                 <h3 className="text-lg font-bold text-stone-900">
-                  {platter.nameHe}
+                  {PLATTER_LABELS[lang][platter.size].title}
                 </h3>
                 <p className="mt-1 text-sm text-stone-500">
-                  {platter.descriptionHe}
+                  {PLATTER_LABELS[lang][platter.size].subtitle}
                 </p>
                 <p className="mt-3 text-xl font-bold text-brand-700">
                   ₪{platter.price}
                 </p>
                 <span className="mt-3 inline-block text-sm font-medium text-brand-600 opacity-0 transition group-hover:opacity-100">
-                  בחירה ←
+                  {lang === "he" ? "בחירה ←" : "Select →"}
                 </span>
               </button>
             ))}
@@ -199,13 +211,14 @@ export function OrderForm() {
             onClick={() => setStep(1)}
             className="mb-4 text-sm font-medium text-brand-600 hover:underline"
           >
-            → חזרה לבחירת מגש
+            {uiText("backToPlatter", lang)}
           </button>
           <h2 className="section-title mb-2">
-            {selectedPlatter.nameHe} — הסירו פירות שלא תרצו
+            {PLATTER_LABELS[lang][selectedPlatter.size].title} —{" "}
+            {uiText("pickFruitsTitle", lang)}
           </h2>
           <p className="mb-6 text-stone-600">
-            לחצו על פירות שברצונכם להוציא מהמגש (אופציונלי)
+            {uiText("pickFruitsHint", lang)}
           </p>
           <div className="flex flex-wrap gap-2">
             {selectedPlatter.fruits.map((fruit) => {
@@ -221,14 +234,15 @@ export function OrderForm() {
                       : "bg-brand-100 text-brand-800 hover:bg-brand-200"
                   }`}
                 >
-                  {fruit}
+                  {fruitLabel(fruit, lang)}
                 </button>
               );
             })}
           </div>
           {excludedFruits.length > 0 && (
             <p className="mt-4 text-sm text-stone-500">
-              מוציאים: {excludedFruits.join(", ")}
+              {uiText("removedFruits", lang)}:{" "}
+              {excludedFruits.map((f) => fruitLabel(f, lang)).join(", ")}
             </p>
           )}
           <div className="mt-8 flex justify-end">
@@ -237,7 +251,7 @@ export function OrderForm() {
               className="btn-primary"
               onClick={() => setStep(3)}
             >
-              המשך לפרטי משלוח
+              {uiText("continueToDelivery", lang)}
             </button>
           </div>
         </section>
@@ -250,18 +264,18 @@ export function OrderForm() {
             onClick={() => setStep(2)}
             className="mb-4 text-sm font-medium text-brand-600 hover:underline"
           >
-            → חזרה לבחירת פירות
+            {uiText("backToFruits", lang)}
           </button>
-          <h2 className="section-title mb-6">פרטי משלוח</h2>
+          <h2 className="section-title mb-6">{uiText("deliveryDetails", lang)}</h2>
 
           {availableDays.length === 0 ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-              אין ימי משלוח זמינים כרגע. נסו שוב מאוחר יותר.
+              {uiText("noDeliveryDays", lang)}
             </div>
           ) : (
             <>
               <label className="mb-2 block text-sm font-medium text-stone-700">
-                יום משלוח *
+                {uiText("deliveryDay", lang)} {uiText("requiredMark", lang)}
               </label>
               <div className="mb-6 flex flex-wrap gap-3">
                 {availableDays.map((day) => (
@@ -275,19 +289,19 @@ export function OrderForm() {
                         : "border border-stone-300 bg-white text-stone-700 hover:border-brand-400"
                     }`}
                   >
-                    {DAY_LABELS[day]}
+                    {DAY_LABELS[lang][day]}
                   </button>
                 ))}
               </div>
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-stone-700">
-                  רחוב ומספר בית *
+                  {uiText("streetAddress", lang)} {uiText("requiredMark", lang)}
                 </label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="הרצל 12, תל אביב"
+                  placeholder={uiText("streetPlaceholder", lang)}
                   value={streetAddress}
                   onChange={(e) => setStreetAddress(e.target.value)}
                 />
@@ -296,24 +310,24 @@ export function OrderForm() {
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-stone-700">
-                    כניסה *
+                    {uiText("entrance", lang)} {uiText("requiredMark", lang)}
                   </label>
                   <input
                     type="text"
                     className="input-field"
-                    placeholder="א׳ / ב׳ / שער ראשי"
+                    placeholder={uiText("entrancePlaceholder", lang)}
                     value={entrance}
                     onChange={(e) => setEntrance(e.target.value)}
                   />
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-stone-700">
-                    קומה *
+                    {uiText("floor", lang)} {uiText("requiredMark", lang)}
                   </label>
                   <input
                     type="text"
                     className="input-field"
-                    placeholder="3 / קרקע / פנטהאוז"
+                    placeholder={uiText("floorPlaceholder", lang)}
                     value={floor}
                     onChange={(e) => setFloor(e.target.value)}
                   />
@@ -322,11 +336,11 @@ export function OrderForm() {
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-stone-700">
-                  הערה למשלוח
+                  {uiText("deliveryNote", lang)}
                 </label>
                 <textarea
                   className="input-field min-h-[80px] resize-y"
-                  placeholder="קוד לדלת, הוראות נוספות..."
+                  placeholder={uiText("deliveryNotePlaceholder", lang)}
                   value={deliveryNote}
                   onChange={(e) => setDeliveryNote(e.target.value)}
                 />
@@ -334,7 +348,7 @@ export function OrderForm() {
 
               <div className="mt-4">
                 <label className="mb-2 block text-sm font-medium text-stone-700">
-                  מספר טלפון *
+                  {uiText("phone", lang)} {uiText("requiredMark", lang)}
                 </label>
                 <input
                   type="tel"
@@ -359,7 +373,7 @@ export function OrderForm() {
                   }
                   onClick={() => setStep(4)}
                 >
-                  המשך לתשלום
+                  {uiText("continueToPayment", lang)}
                 </button>
               </div>
             </>
@@ -374,49 +388,54 @@ export function OrderForm() {
             onClick={() => setStep(3)}
             className="mb-4 text-sm font-medium text-brand-600 hover:underline"
           >
-            → חזרה לפרטי משלוח
+            {uiText("backToDelivery", lang)}
           </button>
-          <h2 className="section-title mb-6">תשלום וסיכום</h2>
+          <h2 className="section-title mb-6">{uiText("paymentSummary", lang)}</h2>
 
           <div className="card mb-6 bg-stone-50">
-            <h3 className="font-bold text-stone-800">סיכום הזמנה</h3>
+            <h3 className="font-bold text-stone-800">{uiText("orderSummary", lang)}</h3>
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-stone-500">מגש</dt>
-                <dd className="font-medium">{selectedPlatter.nameHe}</dd>
+                <dt className="text-stone-500">{uiText("platter", lang)}</dt>
+                <dd className="font-medium">
+                  {PLATTER_LABELS[lang][selectedPlatter.size].title}
+                </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-stone-500">מחיר</dt>
+                <dt className="text-stone-500">{uiText("price", lang)}</dt>
                 <dd className="font-bold text-brand-700">
                   ₪{selectedPlatter.price}
                 </dd>
               </div>
               {deliveryDay && (
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">יום משלוח</dt>
-                  <dd className="font-medium">{DAY_LABELS[deliveryDay]}</dd>
+                  <dt className="text-stone-500">{uiText("deliveryDay", lang)}</dt>
+                  <dd className="font-medium">{DAY_LABELS[lang][deliveryDay]}</dd>
                 </div>
               )}
               <div className="flex justify-between gap-4">
-                <dt className="text-stone-500">כתובת</dt>
+                <dt className="text-stone-500">{uiText("address", lang)}</dt>
                 <dd className="text-left font-medium">
                   {streetAddress}
                   <span className="block text-stone-600">
-                    כניסה {entrance}, קומה {floor}
+                    {uiText("entrance", lang)} {entrance}, {uiText("floor", lang)}{" "}
+                    {floor}
                   </span>
                 </dd>
               </div>
               {excludedFruits.length > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">ללא</dt>
-                  <dd className="font-medium">{excludedFruits.join(", ")}</dd>
+                  <dt className="text-stone-500">{uiText("without", lang)}</dt>
+                  <dd className="font-medium">
+                    {excludedFruits.map((f) => fruitLabel(f, lang)).join(", ")}
+                  </dd>
                 </div>
               )}
             </dl>
           </div>
 
           <label className="mb-3 block text-sm font-medium text-stone-700">
-            אמצעי תשלום *
+            {uiText("paymentMethod", lang)} {uiText("requiredMark", lang)}
           </label>
           <div className="mb-8 flex flex-wrap gap-3">
             {(["cash", "bit"] as PaymentMethod[]).map((method) => (
@@ -430,7 +449,7 @@ export function OrderForm() {
                     : "border border-stone-300 bg-white text-stone-700 hover:border-brand-400"
                 }`}
               >
-                {PAYMENT_LABELS[method]}
+                {PAYMENT_LABELS[lang][method]}
               </button>
             ))}
           </div>
@@ -441,7 +460,7 @@ export function OrderForm() {
             disabled={!paymentMethod || submitting}
             onClick={submitOrder}
           >
-            {submitting ? "שולח..." : "שליחת הזמנה"}
+            {submitting ? uiText("submitting", lang) : uiText("submitOrder", lang)}
           </button>
         </section>
       )}
@@ -449,18 +468,18 @@ export function OrderForm() {
   );
 }
 
-function StepIndicator({ current }: { current: Step }) {
+function StepIndicator({ current, lang }: { current: Step; lang: "en" | "he" }) {
   const steps = [
-    { n: 1, label: "מגש" },
-    { n: 2, label: "פירות" },
-    { n: 3, label: "משלוח" },
-    { n: 4, label: "תשלום" },
+    { n: 1, labelEn: "Platter", labelHe: "מגש" },
+    { n: 2, labelEn: "Fruits", labelHe: "פירות" },
+    { n: 3, labelEn: "Delivery", labelHe: "משלוח" },
+    { n: 4, labelEn: "Payment", labelHe: "תשלום" },
   ];
   const currentNum = current === "success" ? 5 : current;
 
   return (
     <nav className="flex justify-center gap-2 sm:gap-4">
-      {steps.map(({ n, label }) => (
+      {steps.map(({ n, labelEn, labelHe }) => (
         <div
           key={n}
           className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm ${
@@ -476,7 +495,7 @@ function StepIndicator({ current }: { current: Step }) {
           >
             {n}
           </span>
-          <span className="hidden sm:inline">{label}</span>
+          <span className="hidden sm:inline">{lang === "he" ? labelHe : labelEn}</span>
         </div>
       ))}
     </nav>

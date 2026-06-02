@@ -5,9 +5,12 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { AdminLogin } from "@/components/AdminLogin";
 import { AdminDashboard } from "@/components/AdminDashboard";
+import { useI18n } from "@/components/I18nProvider";
+import { uiText } from "@/lib/i18n";
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const { lang } = useI18n();
 
   useEffect(() => {
     fetch("/api/orders")
@@ -23,7 +26,7 @@ export default function AdminPage() {
           href="/"
           className="mb-6 inline-block text-sm font-medium text-brand-600 hover:underline"
         >
-          → חזרה לאתר
+          {uiText("backToSite", lang)}
         </Link>
 
         {authed === null ? (

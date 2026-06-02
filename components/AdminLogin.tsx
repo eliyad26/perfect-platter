@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/components/I18nProvider";
+import { uiText } from "@/lib/i18n";
 
 export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
+  const { lang } = useI18n();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,13 +32,17 @@ export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="card mx-auto max-w-md">
-      <h2 className="text-xl font-bold text-stone-900">כניסת מנהל</h2>
-      <p className="mt-2 text-sm text-stone-500">הזינו את סיסמת הניהול</p>
+      <h2 className="text-xl font-bold text-stone-900">
+        {uiText("adminLoginTitle", lang)}
+      </h2>
+      <p className="mt-2 text-sm text-stone-500">
+        {uiText("adminLoginSubtitle", lang)}
+      </p>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <input
           type="password"
           className="input-field"
-          placeholder="סיסמה"
+          placeholder={uiText("passwordPlaceholder", lang)}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoFocus
@@ -44,7 +51,7 @@ export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
           <p className="text-sm text-red-600">{error}</p>
         )}
         <button type="submit" className="btn-primary w-full" disabled={loading}>
-          {loading ? "מתחבר..." : "כניסה"}
+          {loading ? uiText("loggingIn", lang) : uiText("login", lang)}
         </button>
       </form>
     </div>

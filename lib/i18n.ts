@@ -1,0 +1,277 @@
+export type Lang = "en" | "he";
+
+export const DEFAULT_LANG: Lang = "en";
+
+export function isLang(value: unknown): value is Lang {
+  return value === "en" || value === "he";
+}
+
+export function langDir(lang: Lang): "ltr" | "rtl" {
+  return lang === "he" ? "rtl" : "ltr";
+}
+
+export function langLabel(lang: Lang): string {
+  return lang === "he" ? "עברית" : "English";
+}
+
+export const UI = {
+  businessTagline: {
+    en: "Fresh fruit platters",
+    he: "מגשי פירות טריים",
+  },
+  admin: {
+    en: "Admin",
+    he: "ניהול",
+  },
+  backToSite: {
+    en: "← Back to site",
+    he: "→ חזרה לאתר",
+  },
+  homeTitle: {
+    en: "Order a fresh fruit platter",
+    he: "הזמינו מגש פירות טרי",
+  },
+  homeSubtitle: {
+    en: "Choose a platter, customize the fruits, and pick a delivery day — quick and easy.",
+    he: "בחרו מגש, התאימו את הפירות, והזמינו משלוח ליום שמתאים לכם — פשוט ומהיר.",
+  },
+  footerLine: {
+    en: "Delivery Wed/Thu/Fri · Pay with cash or Bit",
+    he: "משלוח ברביעי, חמישי ושישי · תשלום במזומן או ביט",
+  },
+  loadingMenuError: {
+    en: "We couldn’t load the menu. Please refresh and try again.",
+    he: "לא הצלחנו לטעון את התפריט. נסו לרענן את הדף.",
+  },
+  orderSubmitError: {
+    en: "Failed to submit order",
+    he: "שגיאה בשליחה",
+  },
+  orderSuccessTitle: {
+    en: "Order received!",
+    he: "ההזמנה התקבלה!",
+  },
+  orderSuccessId: {
+    en: "Order number",
+    he: "מספר הזמנה",
+  },
+  orderSuccessBody: {
+    en: "We’ll contact you shortly to confirm. Thank you!",
+    he: "ניצור איתכם קשר בקרוב לאישור. תודה שבחרתם בנו!",
+  },
+  orderAnother: {
+    en: "Place another order",
+    he: "הזמנה נוספת",
+  },
+  choosePlatter: {
+    en: "Choose your platter size",
+    he: "בחרו את גודל המגש",
+  },
+  choosePlatterHint: {
+    en: "All platters are made with fresh seasonal fruit.",
+    he: "כל המגשים מורכבים מפירות העונה הטריים ביותר",
+  },
+  pickFruitsTitle: {
+    en: "Remove fruits you don’t want",
+    he: "הסירו פירות שלא תרצו",
+  },
+  pickFruitsHint: {
+    en: "Tap fruits to exclude them (optional).",
+    he: "לחצו על פירות שברצונכם להוציא מהמגש (אופציונלי)",
+  },
+  removedFruits: {
+    en: "Removed",
+    he: "מוציאים",
+  },
+  continueToDelivery: {
+    en: "Continue to delivery",
+    he: "המשך לפרטי משלוח",
+  },
+  deliveryDetails: {
+    en: "Delivery details",
+    he: "פרטי משלוח",
+  },
+  noDeliveryDays: {
+    en: "No delivery days available right now. Please try again later.",
+    he: "אין ימי משלוח זמינים כרגע. נסו שוב מאוחר יותר.",
+  },
+  deliveryDay: {
+    en: "Delivery day",
+    he: "יום משלוח",
+  },
+  streetAddress: {
+    en: "Street address",
+    he: "רחוב ומספר בית",
+  },
+  streetPlaceholder: {
+    en: "Herzl 12, Tel Aviv",
+    he: "הרצל 12, תל אביב",
+  },
+  entrance: {
+    en: "Entrance",
+    he: "כניסה",
+  },
+  entrancePlaceholder: {
+    en: "A / B / Main gate",
+    he: "א׳ / ב׳ / שער ראשי",
+  },
+  floor: {
+    en: "Floor",
+    he: "קומה",
+  },
+  floorPlaceholder: {
+    en: "3 / Ground / Penthouse",
+    he: "3 / קרקע / פנטהאוז",
+  },
+  deliveryNote: {
+    en: "Delivery note",
+    he: "הערה למשלוח",
+  },
+  deliveryNotePlaceholder: {
+    en: "Door code, special instructions…",
+    he: "קוד לדלת, הוראות נוספות...",
+  },
+  phone: {
+    en: "Phone number",
+    he: "מספר טלפון",
+  },
+  continueToPayment: {
+    en: "Continue to payment",
+    he: "המשך לתשלום",
+  },
+  paymentSummary: {
+    en: "Payment & summary",
+    he: "תשלום וסיכום",
+  },
+  orderSummary: {
+    en: "Order summary",
+    he: "סיכום הזמנה",
+  },
+  platter: {
+    en: "Platter",
+    he: "מגש",
+  },
+  price: {
+    en: "Price",
+    he: "מחיר",
+  },
+  address: {
+    en: "Address",
+    he: "כתובת",
+  },
+  without: {
+    en: "Without",
+    he: "ללא",
+  },
+  paymentMethod: {
+    en: "Payment method",
+    he: "אמצעי תשלום",
+  },
+  submitOrder: {
+    en: "Submit order",
+    he: "שליחת הזמנה",
+  },
+  submitting: {
+    en: "Submitting…",
+    he: "שולח...",
+  },
+  backToPlatter: {
+    en: "← Back to platter selection",
+    he: "→ חזרה לבחירת מגש",
+  },
+  backToFruits: {
+    en: "← Back to fruit selection",
+    he: "→ חזרה לבחירת פירות",
+  },
+  backToDelivery: {
+    en: "← Back to delivery details",
+    he: "→ חזרה לפרטי משלוח",
+  },
+  requiredMark: {
+    en: "*",
+    he: "*",
+  },
+  adminLoginTitle: {
+    en: "Admin login",
+    he: "כניסת מנהל",
+  },
+  adminLoginSubtitle: {
+    en: "Enter your admin password",
+    he: "הזינו את סיסמת הניהול",
+  },
+  passwordPlaceholder: {
+    en: "Password",
+    he: "סיסמה",
+  },
+  login: {
+    en: "Log in",
+    he: "כניסה",
+  },
+  loggingIn: {
+    en: "Logging in…",
+    he: "מתחבר...",
+  },
+};
+
+export const DAY_LABELS: Record<Lang, Record<"wednesday" | "thursday" | "friday", string>> =
+  {
+    en: { wednesday: "Wednesday", thursday: "Thursday", friday: "Friday" },
+    he: { wednesday: "רביעי", thursday: "חמישי", friday: "שישי" },
+  };
+
+export const PAYMENT_LABELS: Record<Lang, Record<"cash" | "bit", string>> = {
+  en: { cash: "Cash", bit: "Bit" },
+  he: { cash: "מזומן", bit: "ביט" },
+};
+
+export const PLATTER_LABELS: Record<
+  Lang,
+  Record<"small" | "medium" | "party", { title: string; subtitle: string }>
+> = {
+  en: {
+    small: { title: "Small Platter", subtitle: "Perfect for 2–4 people" },
+    medium: { title: "Medium Platter", subtitle: "Perfect for 5–8 people" },
+    party: { title: "Party Platter", subtitle: "Perfect for events & parties" },
+  },
+  he: {
+    small: { title: "מגש קטן", subtitle: "מושלם ל-2–4 אנשים" },
+    medium: { title: "מגש בינוני", subtitle: "מושלם ל-5–8 אנשים" },
+    party: { title: "מגש מסיבה", subtitle: "מושלם לאירועים ומסיבות" },
+  },
+};
+
+const FRUIT_HE_TO_EN: Record<string, string> = {
+  "תפוח": "Apple",
+  "בננה": "Banana",
+  "תפוז": "Orange",
+  "מנדרינה": "Mandarin",
+  "ענבים": "Grapes",
+  "אגס": "Pear",
+  "מלון": "Melon",
+  "אבטיח": "Watermelon",
+  "אפרסק": "Peach",
+  "שזיף": "Plum",
+  "אננס": "Pineapple",
+  "מנגו": "Mango",
+  "רימון": "Pomegranate",
+  "תמרים": "Dates",
+  "קיוי": "Kiwi",
+  "תות": "Strawberry",
+};
+
+const FRUIT_EN_TO_HE: Record<string, string> = Object.fromEntries(
+  Object.entries(FRUIT_HE_TO_EN).map(([he, en]) => [en, he])
+);
+
+export function fruitLabel(fruit: string, lang: Lang): string {
+  if (lang === "en") return FRUIT_HE_TO_EN[fruit] ?? fruit;
+  return FRUIT_EN_TO_HE[fruit] ?? fruit;
+}
+
+export function uiText<K extends keyof typeof UI>(
+  key: K,
+  lang: Lang
+): string {
+  return (UI as Record<string, Record<Lang, string>>)[key][lang];
+}
+

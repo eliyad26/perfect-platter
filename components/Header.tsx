@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useI18n } from "@/components/I18nProvider";
+import { uiText } from "@/lib/i18n";
 
 const businessName =
   process.env.NEXT_PUBLIC_BUSINESS_NAME || "Perfect Platter";
 
 export function Header({ showAdminLink = true }: { showAdminLink?: boolean }) {
+  const { lang } = useI18n();
   return (
     <header className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
@@ -16,18 +22,21 @@ export function Header({ showAdminLink = true }: { showAdminLink?: boolean }) {
               {businessName}
             </h1>
             <p className="text-xs text-stone-500 sm:text-sm">
-              Fresh fruit platters · מגשי פירות טריים
+              {uiText("businessTagline", lang)}
             </p>
           </div>
         </Link>
-        {showAdminLink && (
-          <Link
-            href="/admin"
-            className="text-sm font-medium text-stone-500 transition hover:text-brand-600"
-          >
-            ניהול
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          {showAdminLink && (
+            <Link
+              href="/admin"
+              className="rounded-xl border border-transparent px-3 py-2 text-sm font-semibold text-stone-600 transition hover:border-stone-200 hover:bg-white hover:text-brand-700"
+            >
+              {uiText("admin", lang)}
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );

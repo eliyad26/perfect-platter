@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Heebo } from "next/font/google";
 import "./globals.css";
+import { I18nProvider } from "@/components/I18nProvider";
 
 const heebo = Heebo({
   subsets: ["hebrew", "latin"],
@@ -23,8 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl" className={heebo.variable}>
-      <body className="font-sans min-h-screen">{children}</body>
+    <html lang="en" dir="ltr" className={heebo.variable}>
+      <body className="font-sans min-h-screen">
+        <I18nProvider>{children}</I18nProvider>
+      </body>
     </html>
   );
 }
