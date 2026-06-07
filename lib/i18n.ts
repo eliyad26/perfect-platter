@@ -229,14 +229,14 @@ export const PLATTER_LABELS: Record<
   Record<"small" | "medium" | "party", { title: string; subtitle: string }>
 > = {
   en: {
-    small: { title: "Small Platter", subtitle: "Perfect for 2–4 people" },
-    medium: { title: "Medium Platter", subtitle: "Perfect for 5–8 people" },
-    party: { title: "Party Platter", subtitle: "Perfect for events & parties" },
+    small: { title: "Small Platter", subtitle: "A little taste of luxury" },
+    medium: { title: "Medium Platter", subtitle: "The crowd-pleaser. Every time." },
+    party: { title: "Party Platter", subtitle: "Go big or go home" },
   },
   he: {
-    small: { title: "מגש קטן", subtitle: "מושלם ל-2–4 אנשים" },
-    medium: { title: "מגש בינוני", subtitle: "מושלם ל-5–8 אנשים" },
-    party: { title: "מגש מסיבה", subtitle: "מושלם לאירועים ומסיבות" },
+    small: { title: "מגש קטן", subtitle: "קצת מהטוב" },
+    medium: { title: "מגש בינוני", subtitle: "שביע רצון מובטח" },
+    party: { title: "מגש מסיבה", subtitle: "כי גדול זה יפה" },
   },
 };
 
