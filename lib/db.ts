@@ -54,7 +54,7 @@ export async function updateDeliverySettings(
 
 export async function createOrder(data: {
   platterSize: PlatterSize;
-  excludedFruits: string[];
+  specialRequest: string;
   deliveryDay: Order["deliveryDay"];
   streetAddress: string;
   entrance: string;
@@ -68,7 +68,7 @@ export async function createOrder(data: {
     id: store.nextOrderId++,
     createdAt: new Date().toISOString(),
     platterSize: data.platterSize,
-    excludedFruits: data.excludedFruits,
+    specialRequest: data.specialRequest,
     deliveryDay: data.deliveryDay,
     streetAddress: data.streetAddress,
     entrance: data.entrance,

@@ -13,24 +13,12 @@ import {
   DAY_LABELS,
   PAYMENT_LABELS,
   PLATTER_LABELS,
-  fruitLabel,
   uiText,
 } from "@/lib/i18n";
 import { useI18n } from "@/components/I18nProvider";
 
 type Step = 1 | 2 | 3 | 4 | "success";
 
-const FRUIT_COLORS: Record<string, string> = {
-  watermelon: "#e74c3c", kiwi: "#7dbb5d", tangerine: "#f39c12",
-  mango: "#f1c40f", cherry: "#c0392b", cherries: "#c0392b",
-  grapes: "#8e44ad", strawberry: "#e74c3c", strawberries: "#e74c3c",
-  pineapple: "#f39c12", melon: "#7dbb5d", peach: "#f97316",
-  plum: "#7c3aed", banana: "#eab308", orange: "#f97316",
-  apple: "#ef4444", blueberry: "#3b82f6", raspberry: "#ec4899",
-};
-function fruitColor(fruit: string): string {
-  return FRUIT_COLORS[fruit.toLowerCase()] ?? "#8b5520";
-}
 
 export function OrderForm() {
   const { lang } = useI18n();
@@ -42,7 +30,7 @@ export function OrderForm() {
 
   const [step, setStep] = useState<Step>(1);
   const [selectedSize, setSelectedSize] = useState<PlatterSize | null>(null);
-  const [excludedFruits, setExcludedFruits] = useState<string[]>([]);
+  const [specialRequest, setSpecialRequest] = useState("");
   const [deliveryDay, setDeliveryDay] = useState<DeliveryDay | null>(null);
   const [streetAddress, setStreetAddress] = useState("");
   const [entrance, setEntrance] = useState("");
@@ -73,12 +61,6 @@ export function OrderForm() {
     (d) => delivery?.[d]
   );
 
-  function toggleFruit(fruit: string) {
-    setExcludedFruits((prev) =>
-      prev.includes(fruit) ? prev.filter((f) => f !== fruit) : [...prev, fruit]
-    );
-  }
-
   async function submitOrder() {
     if (!selectedSize || !deliveryDay || !paymentMethod) return;
     setSubmitting(true);
@@ -88,7 +70,7 @@ export function OrderForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          platterSize: selectedSize, excludedFruits, deliveryDay,
+          platterSize: selectedSize, specialRequest, deliveryDay,
           streetAddress, entrance, floor, deliveryNote, phone, paymentMethod,
         }),
       });
@@ -167,7 +149,7 @@ export function OrderForm() {
               <button
                 key={platter.size}
                 type="button"
-                onClick={() => { setSelectedSize(platter.size); setExcludedFruits([]); setStep(2); }}
+                onClick={() => { setSelectedSize(platter.size); setSpecialRequest(""); setStep(2); }}
                 className={`group cursor-pointer text-center transition-all border-2 bg-cream-warm overflow-hidden hover:border-brand-600 hover:shadow-xl hover:-translate-y-1 ${
                   selectedSize === platter.size ? "border-brand-600 shadow-lg" : "border-cream-blush"
                 }`}
@@ -205,7 +187,7 @@ export function OrderForm() {
         </section>
       )}
 
-      {/* STEP 2 — Customize fruits */}
+      {/* STEP 2 — Special requests */}
       {step === 2 && selectedPlatter && (
         <section>
           <button type="button" onClick={() => setStep(1)}
@@ -223,29 +205,14 @@ export function OrderForm() {
               {uiText("pickFruitsHint", lang)}
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            {selectedPlatter.fruits.map((fruit) => {
-              const excluded = excludedFruits.includes(fruit);
-              return (
-                <button
-                  key={fruit} type="button" onClick={() => toggleFruit(fruit)}
-                  className={`flex items-center gap-2 border-2 px-5 py-2.5 font-sans text-sm font-medium transition-all ${
-                    excluded
-                      ? "border-red-300 bg-red-50 text-red-400 line-through"
-                      : "border-cream-blush bg-cream-warm text-brand-600 hover:border-brand-600 hover:-translate-y-0.5"
-                  }`}
-                >
-                  <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: fruitColor(fruit) }} />
-                  {fruitLabel(fruit, lang)}
-                </button>
-              );
-            })}
+          <div className="mx-auto max-w-lg">
+            <textarea
+              className="input-field min-h-[120px] resize-y w-full"
+              placeholder={uiText("specialRequestPlaceholder", lang)}
+              value={specialRequest}
+              onChange={(e) => setSpecialRequest(e.target.value)}
+            />
           </div>
-          {excludedFruits.length > 0 && (
-            <p className="mt-5 text-center text-sm text-brand-300">
-              {uiText("removedFruits", lang)}: {excludedFruits.map((f) => fruitLabel(f, lang)).join(", ")}
-            </p>
-          )}
           <div className="mt-10 flex justify-center">
             <button type="button" className="btn-primary" onClick={() => setStep(3)}>
               {uiText("continueToDelivery", lang)}
@@ -367,7 +334,7 @@ export function OrderForm() {
                   { label: uiText("platter", lang), value: PLATTER_LABELS[lang][selectedPlatter.size].title },
                   { label: uiText("deliveryDay", lang), value: deliveryDay ? DAY_LABELS[lang][deliveryDay] : "" },
                   { label: uiText("address", lang), value: `${streetAddress} — ${uiText("entrance", lang)} ${entrance}, ${uiText("floor", lang)} ${floor}` },
-                  ...(excludedFruits.length > 0 ? [{ label: uiText("without", lang), value: excludedFruits.map((f) => fruitLabel(f, lang)).join(", ") }] : []),
+                  ...(specialRequest ? [{ label: uiText("specialRequest", lang), value: specialRequest }] : []),
                 ].map(({ label, value }) => value ? (
                   <div key={label} className="flex justify-between border-b border-cream-blush pb-4">
                     <dt className="font-display text-xs tracking-widest uppercase text-brand-300">{label}</dt>
@@ -410,7 +377,7 @@ export function OrderForm() {
 function StepIndicator({ current, lang }: { current: Step; lang: "en" | "he" }) {
   const steps = [
     { n: 1, labelEn: "Platter", labelHe: "מגש" },
-    { n: 2, labelEn: "Fruits",  labelHe: "פירות" },
+    { n: 2, labelEn: "Requests", labelHe: "בקשות" },
     { n: 3, labelEn: "Delivery",labelHe: "משלוח" },
     { n: 4, labelEn: "Payment", labelHe: "תשלום" },
   ];

@@ -3,7 +3,6 @@ import {
   createOrder,
   getAllOrders,
   getDeliverySettings,
-  getPlatter,
 } from "@/lib/db";
 import type { DeliveryDay, PaymentMethod, PlatterSize } from "@/lib/types";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const platterSize = body.platterSize as PlatterSize;
-    const excludedFruits = (body.excludedFruits || []) as string[];
+    const specialRequest = String(body.specialRequest || "").trim();
     const deliveryDay = body.deliveryDay as DeliveryDay;
     const streetAddress = String(body.streetAddress || "").trim();
     const entrance = String(body.entrance || "").trim();
@@ -65,18 +64,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const platter = await getPlatter(platterSize);
-    if (!platter) {
-      return NextResponse.json({ error: "מגש לא נמצא" }, { status: 400 });
-    }
-
-    const validExclusions = excludedFruits.filter((f) =>
-      platter.fruits.includes(f)
-    );
-
     const order = await createOrder({
       platterSize,
-      excludedFruits: validExclusions,
+      specialRequest,
       deliveryDay,
       streetAddress,
       entrance,

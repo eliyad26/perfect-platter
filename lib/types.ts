@@ -16,7 +16,7 @@ export interface Order {
   id: number;
   createdAt: string;
   platterSize: PlatterSize;
-  excludedFruits: string[];
+  specialRequest: string;
   deliveryDay: DeliveryDay;
   streetAddress: string;
   entrance: string;

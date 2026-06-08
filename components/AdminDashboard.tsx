@@ -12,7 +12,6 @@ import {
   DAY_LABELS,
   PAYMENT_LABELS,
   PLATTER_LABELS,
-  fruitLabel,
   type Lang,
 } from "@/lib/i18n";
 import { useI18n } from "@/components/I18nProvider";
@@ -341,13 +340,13 @@ function OrdersTab({
                 )}
               </dd>
             </div>
-            {order.excludedFruits.length > 0 && (
+            {order.specialRequest && (
               <div className="sm:col-span-2">
                 <dt className="text-stone-500">
-                  {lang === "he" ? "ללא פירות" : "Excluded fruits"}
+                  {lang === "he" ? "בקשה מיוחדת" : "Special request"}
                 </dt>
-                <dd className="font-medium text-red-700">
-                  {order.excludedFruits.map((f) => fruitLabel(f, lang)).join(", ")}
+                <dd className="font-medium text-brand-700">
+                  {order.specialRequest}
                 </dd>
               </div>
             )}

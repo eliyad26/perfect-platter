@@ -129,6 +129,11 @@ export function migrateStore(store: Store): { store: Store; changed: boolean } {
       order.streetAddress = "";
       changed = true;
     }
+    if (order.specialRequest === undefined) {
+      const legacy = (order as unknown as { excludedFruits?: string[] }).excludedFruits;
+      order.specialRequest = legacy?.length ? legacy.join(", ") : "";
+      changed = true;
+    }
   }
 
   if (next.schemaVersion < STORE_SCHEMA_VERSION) {

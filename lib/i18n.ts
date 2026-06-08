@@ -32,8 +32,8 @@ export const UI = {
     he: "הזמינו מגש פירות טרי",
   },
   homeSubtitle: {
-    en: "Choose a platter, customize the fruits, and pick a delivery day — quick and easy.",
-    he: "בחרו מגש, התאימו את הפירות, והזמינו משלוח ליום שמתאים לכם — פשוט ומהיר.",
+    en: "Choose a platter, add any special requests, and pick a delivery day — quick and easy.",
+    he: "בחרו מגש, הוסיפו בקשות מיוחדות, והזמינו משלוח ליום שמתאים לכם — פשוט ומהיר.",
   },
   footerLine: {
     en: "Delivery Wed/Thu/Fri · Pay with cash or Bit",
@@ -72,16 +72,16 @@ export const UI = {
     he: "כל המגשים מורכבים מפירות העונה הטריים ביותר",
   },
   pickFruitsTitle: {
-    en: "Remove fruits you don’t want",
-    he: "הסירו פירות שלא תרצו",
+    en: "Special Requests",
+    he: "בקשות מיוחדות",
   },
   pickFruitsHint: {
-    en: "Tap fruits to exclude them (optional).",
-    he: "לחצו על פירות שברצונכם להוציא מהמגש (אופציונלי)",
+    en: "Any preferences or fruits to avoid? Leave a note (optional).",
+    he: "בקשות מיוחדות, אלרגיות, או פירות שלא תרצו? השאירו הערה (אופציונלי)",
   },
-  removedFruits: {
-    en: "Removed",
-    he: "מוציאים",
+  specialRequestPlaceholder: {
+    en: "e.g. no watermelon…",
+    he: "למשל: ללא אבטיח...",
   },
   continueToDelivery: {
     en: "Continue to delivery",
@@ -159,9 +159,9 @@ export const UI = {
     en: "Address",
     he: "כתובת",
   },
-  without: {
-    en: "Without",
-    he: "ללא",
+  specialRequest: {
+    en: "Special request",
+    he: "בקשה מיוחדת",
   },
   paymentMethod: {
     en: "Payment method",
@@ -180,8 +180,8 @@ export const UI = {
     he: "→ חזרה לבחירת מגש",
   },
   backToFruits: {
-    en: "← Back to fruit selection",
-    he: "→ חזרה לבחירת פירות",
+    en: "← Back to special requests",
+    he: "→ חזרה לבקשות מיוחדות",
   },
   backToDelivery: {
     en: "← Back to delivery details",
