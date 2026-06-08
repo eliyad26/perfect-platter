@@ -29,7 +29,13 @@ async function writeToNetlify(store: Store): Promise<void> {
 
 function readFromFile(): Store | null {
   if (!fs.existsSync(STORE_FILE)) return null;
-  return JSON.parse(fs.readFileSync(STORE_FILE, "utf-8")) as Store;
+  try {
+    const content = fs.readFileSync(STORE_FILE, "utf-8");
+    if (!content.trim()) return null;
+    return JSON.parse(content) as Store;
+  } catch {
+    return null;
+  }
 }
 
 function writeToFile(store: Store): void {

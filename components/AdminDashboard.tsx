@@ -413,6 +413,7 @@ function PlattersTab({
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) onUpload(platter.size, file);
+                  e.target.value = "";
                 }}
               />
             </span>
