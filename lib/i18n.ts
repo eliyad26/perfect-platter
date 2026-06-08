@@ -56,8 +56,8 @@ export const UI = {
     he: "מספר הזמנה",
   },
   orderSuccessBody: {
-    en: "We’ll contact you shortly to confirm. Thank you!",
-    he: "ניצור איתכם קשר בקרוב לאישור. תודה שבחרתם בנו!",
+    en: "A confirmation email is on its way to you. Thank you for choosing Perfect Platter!",
+    he: "אישור ההזמנה נשלח לאימייל שלך. תודה שבחרתם ב-Perfect Platter!",
   },
   orderAnother: {
     en: "Place another order",
@@ -254,13 +254,13 @@ export const PLATTER_LABELS: Record<
 > = {
   en: {
     small: { title: "Small Platter", subtitle: "A little taste of luxury" },
-    medium: { title: "Medium Platter", subtitle: "The crowd-pleaser. Every time." },
+    medium: { title: "Medium Platter", subtitle: "Everyone's favourite. Every time." },
     party: { title: "Party Platter", subtitle: "Go big or go home" },
   },
   he: {
-    small: { title: "מגש קטן", subtitle: "קצת מהטוב" },
-    medium: { title: "מגש בינוני", subtitle: "שביע רצון מובטח" },
-    party: { title: "מגש מסיבה", subtitle: "כי גדול זה יפה" },
+    small: { title: "מגש קטן", subtitle: "הסוד? רק הפירות הכי טריים" },
+    medium: { title: "מגש בינוני", subtitle: "מביא אושר לכל שולחן" },
+    party: { title: "מגש מסיבה", subtitle: "כשרוצים לעשות רושם" },
   },
 };
 

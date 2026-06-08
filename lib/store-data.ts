@@ -106,7 +106,7 @@ export function defaultStore(): Store {
     })),
     delivery: { wednesday: true, thursday: true, friday: true },
     sessions: [],
-    nextOrderId: 1,
+    nextOrderId: 500,
   };
 }
 
@@ -137,6 +137,11 @@ export function migrateStore(store: Store): { store: Store; changed: boolean } {
     if (order.name === undefined) { order.name = ""; changed = true; }
     if (order.email === undefined) { order.email = ""; changed = true; }
     if (order.deliveryTime === undefined) { order.deliveryTime = ""; changed = true; }
+  }
+
+  if (next.nextOrderId < 500) {
+    next.nextOrderId = 500;
+    changed = true;
   }
 
   if (next.schemaVersion < STORE_SCHEMA_VERSION) {
