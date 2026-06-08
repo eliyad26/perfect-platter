@@ -80,10 +80,9 @@ function escHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildHtml(order: Order, price: number, lang: Lang): string {
+function buildHtml(order: Order, totalPrice: number, lang: Lang): string {
   const t = T[lang];
 
-  const platterName = t.platter[order.platterSize as keyof typeof t.platter] ?? order.platterSize;
   const dayName = t.day[order.deliveryDay as keyof typeof t.day] ?? order.deliveryDay;
   const timeLabel = order.deliveryTime ? formatTimeSlot(order.deliveryTime, lang) : "";
   const paymentLabel = t.payment[order.paymentMethod as keyof typeof t.payment] ?? order.paymentMethod;
@@ -147,7 +146,13 @@ function buildHtml(order: Order, price: number, lang: Lang): string {
           <td style="padding:24px 40px 32px;">
             <table width="100%" cellpadding="0" cellspacing="0"
               style="border:1px solid #ede5dc;border-collapse:collapse;">
-              ${row(t.labels.platter, `${platterName} — ₪${price}`)}
+              ${(order.items ?? []).map((item) => {
+                const name = t.platter[item.size as keyof typeof t.platter] ?? item.size;
+                const label = item.quantity > 1 ? `${name} ×${item.quantity}` : name;
+                return row(t.labels.platter, label);
+              }).join("")}
+              ${divider()}
+              ${row(lang === "he" ? "סה״כ" : "Total", `₪${totalPrice}`)}
               ${divider()}
               ${row(t.labels.day, dayName)}
               ${row(t.labels.time, timeLabel)}
@@ -194,6 +199,6 @@ export async function sendOrderConfirmation(
     from: FROM,
     to: order.email,
     subject: t.subject(order.id),
-    html: buildHtml(order, price, lang),
+    html: buildHtml(order, price, lang),  // price = totalPrice passed in
   });
 }

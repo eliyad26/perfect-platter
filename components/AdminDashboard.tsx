@@ -269,8 +269,10 @@ function OrdersTab({
   return (
     <div className="space-y-4">
       {orders.map((order) => {
-        const price =
-          platters.find((p) => p.size === order.platterSize)?.price ?? null;
+        const total = order.items?.reduce((sum, item) => {
+          const p = platters.find((p) => p.size === item.size);
+          return sum + (p?.price ?? 0) * item.quantity;
+        }, 0) ?? null;
         return (
         <article key={order.id} className="card">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -306,11 +308,24 @@ function OrdersTab({
           </div>
 
           <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-stone-500">{lang === "he" ? "מגש" : "Platter"}</dt>
-              <dd className="font-medium">
-                {PLATTER_LABELS[lang][order.platterSize].title}
-                {price != null && ` · ₪${price}`}
+            <div className="sm:col-span-2">
+              <dt className="text-stone-500">{lang === "he" ? "מגשים" : "Platters"}</dt>
+              <dd className="font-medium space-y-0.5">
+                {order.items?.map((item) => {
+                  const p = platters.find((p) => p.size === item.size);
+                  return (
+                    <div key={item.size}>
+                      {PLATTER_LABELS[lang][item.size].title}
+                      {item.quantity > 1 && ` ×${item.quantity}`}
+                      {p && ` · ₪${p.price * item.quantity}`}
+                    </div>
+                  );
+                })}
+                {total != null && (order.items?.length ?? 0) > 1 && (
+                  <div className="font-bold text-brand-600 pt-1 border-t border-stone-100">
+                    {lang === "he" ? "סה״כ" : "Total"}: ₪{total}
+                  </div>
+                )}
               </dd>
             </div>
             <div>

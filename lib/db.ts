@@ -3,6 +3,7 @@ import type {
   Order,
   PaymentMethod,
   PlatterConfig,
+  PlatterItem,
   PlatterSize,
 } from "./types";
 import { loadStore, saveStore } from "./storage";
@@ -56,7 +57,7 @@ export async function createOrder(data: {
   name: string;
   email: string;
   lang: "en" | "he";
-  platterSize: PlatterSize;
+  items: PlatterItem[];
   specialRequest: string;
   deliveryTime: string;
   deliveryDay: Order["deliveryDay"];
@@ -74,7 +75,7 @@ export async function createOrder(data: {
     name: data.name,
     email: data.email,
     lang: data.lang,
-    platterSize: data.platterSize,
+    items: data.items,
     specialRequest: data.specialRequest,
     deliveryTime: data.deliveryTime,
     deliveryDay: data.deliveryDay,

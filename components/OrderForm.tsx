@@ -9,6 +9,7 @@ import type {
   PlatterConfig,
   PlatterSize,
 } from "@/lib/types";
+
 import {
   DAY_LABELS,
   PAYMENT_LABELS,
@@ -30,7 +31,7 @@ export function OrderForm() {
   const [error, setError] = useState("");
 
   const [step, setStep] = useState<Step>(1);
-  const [selectedSize, setSelectedSize] = useState<PlatterSize | null>(null);
+  const [quantities, setQuantities] = useState<Record<PlatterSize, number>>({ small: 0, medium: 0, party: 0 });
   const [specialRequest, setSpecialRequest] = useState("");
   const [deliveryDay, setDeliveryDay] = useState<DeliveryDay | null>(null);
   const [deliveryTime, setDeliveryTime] = useState("");
@@ -60,21 +61,31 @@ export function OrderForm() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const selectedPlatter = platters.find((p) => p.size === selectedSize);
+  const selectedItems = platters
+    .filter((p) => quantities[p.size] > 0)
+    .map((p) => ({ ...p, quantity: quantities[p.size] }));
+  const hasItems = selectedItems.length > 0;
+  const totalPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  function updateQty(size: PlatterSize, delta: number) {
+    setQuantities((prev) => ({ ...prev, [size]: Math.max(0, (prev[size] || 0) + delta) }));
+  }
+
   const availableDays = (["wednesday", "thursday", "friday"] as DeliveryDay[]).filter(
     (d) => delivery?.[d]
   );
 
   async function submitOrder() {
-    if (!selectedSize || !deliveryDay || !paymentMethod) return;
+    if (!hasItems || !deliveryDay || !paymentMethod) return;
     setSubmitting(true);
     setError("");
     try {
+      const items = selectedItems.map((i) => ({ size: i.size, quantity: i.quantity }));
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name, email, lang, platterSize: selectedSize, specialRequest,
+          name, email, lang, items, specialRequest,
           deliveryDay, deliveryTime,
           streetAddress, entrance, floor, deliveryNote, phone, paymentMethod,
         }),
@@ -130,78 +141,116 @@ export function OrderForm() {
         </div>
       )}
 
-      {/* STEP 1 — Choose platter */}
+      {/* STEP 1 — Choose platters */}
       {step === 1 && (
         <section>
           <div className="mb-10 text-center">
             {lang === "he" ? (
               <>
                 <p className="font-he-script text-2xl text-brand-400 leading-none mb-1">בחרו את</p>
-                <h2 className="font-he-display text-5xl sm:text-6xl text-brand-600">גודל המגש</h2>
+                <h2 className="font-he-display text-5xl sm:text-6xl text-brand-600">המגשים שלכם</h2>
               </>
             ) : (
               <>
-                <p className="font-script text-2xl text-brand-400 leading-none mb-1">choose your</p>
-                <h2 className="font-display text-5xl sm:text-6xl tracking-wide text-brand-600 uppercase">Platter Size</h2>
+                <p className="font-script text-2xl text-brand-400 leading-none mb-1">build your</p>
+                <h2 className="font-display text-5xl sm:text-6xl tracking-wide text-brand-600 uppercase">Order</h2>
               </>
             )}
             <p className="mt-3 text-sm font-medium text-brand-300 tracking-wide">
-              {uiText("choosePlatterHint", lang)}
+              {lang === "he" ? "ניתן להזמין מגשים משילובים שונים" : "Mix and match as many platters as you like"}
             </p>
           </div>
+
           <div className="grid gap-6 sm:grid-cols-3">
-            {platters.map((platter) => (
-              <button
-                key={platter.size}
-                type="button"
-                onClick={() => { setSelectedSize(platter.size); setSpecialRequest(""); setStep(2); }}
-                className={`group cursor-pointer text-center transition-all border-2 bg-cream-warm overflow-hidden hover:border-brand-600 hover:shadow-xl hover:-translate-y-1 ${
-                  selectedSize === platter.size ? "border-brand-600 shadow-lg" : "border-cream-blush"
-                }`}
-              >
-                <div className="relative aspect-square overflow-hidden bg-cream">
-                  {platter.imageUrl ? (
-                    <Image
-                      src={platter.imageUrl}
-                      alt={PLATTER_LABELS[lang][platter.size].title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-7xl">🍉</div>
-                  )}
+            {platters.map((platter) => {
+              const qty = quantities[platter.size] || 0;
+              return (
+                <div
+                  key={platter.size}
+                  className={`text-center border-2 bg-cream-warm overflow-hidden transition-all ${
+                    qty > 0 ? "border-brand-600 shadow-lg" : "border-cream-blush"
+                  }`}
+                >
+                  <div className="relative aspect-square overflow-hidden bg-cream">
+                    {platter.imageUrl ? (
+                      <Image
+                        src={platter.imageUrl}
+                        alt={PLATTER_LABELS[lang][platter.size].title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-7xl">🍉</div>
+                    )}
+                  </div>
+                  <div className="p-5 border-t-2 border-cream-blush">
+                    <h3 className={`text-2xl tracking-wide text-brand-600 uppercase ${lang === "he" ? "font-he-display" : "font-display"}`}>
+                      {PLATTER_LABELS[lang][platter.size].title}
+                    </h3>
+                    <p className={`mt-1 text-sm text-brand-400 italic ${lang === "he" ? "font-he-script" : "font-sans"}`}>
+                      {PLATTER_LABELS[lang][platter.size].subtitle}
+                    </p>
+                    <p className="mt-2 font-script text-xl text-gold">₪{platter.price}</p>
+
+                    {/* Quantity control */}
+                    <div className="mt-4 flex items-center justify-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => updateQty(platter.size, -1)}
+                        disabled={qty === 0}
+                        className="flex h-9 w-9 items-center justify-center border-2 border-brand-200 text-brand-400 text-xl font-bold transition hover:border-brand-600 hover:text-brand-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        −
+                      </button>
+                      <span className="w-6 text-center font-display text-xl text-brand-600">{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => updateQty(platter.size, +1)}
+                        className="flex h-9 w-9 items-center justify-center border-2 border-brand-200 text-brand-400 text-xl font-bold transition hover:border-brand-600 hover:text-brand-600"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {qty > 0 && (
+                      <p className="mt-3 font-display text-sm tracking-widest text-brand-400 uppercase">
+                        {lang === "he" ? "סה״כ" : "Subtotal"}: ₪{platter.price * qty}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="p-5 border-t-2 border-cream-blush">
-                  <h3 className={`text-2xl tracking-wide text-brand-600 uppercase ${lang === "he" ? "font-he-display" : "font-display"}`}>
-                    {PLATTER_LABELS[lang][platter.size].title}
-                  </h3>
-                  <p className={`mt-1 text-sm text-brand-400 italic ${lang === "he" ? "font-he-script" : "font-sans"}`}>
-                    {PLATTER_LABELS[lang][platter.size].subtitle}
-                  </p>
-                  <p className="mt-3 font-script text-xl text-gold">
-                    ₪{platter.price}
-                  </p>
-                  <span className="mt-3 inline-block font-display text-sm tracking-widest uppercase text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">
-                    {lang === "he" ? "בחרו ←" : "Select →"}
-                  </span>
-                </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
+
+          {hasItems && (
+            <div className="mt-10 flex flex-col items-center gap-4">
+              <p className="font-script text-3xl text-gold">
+                {uiText("total", lang)}: ₪{totalPrice}
+              </p>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => { setSpecialRequest(""); setStep(2); }}
+              >
+                {lang === "he" ? "המשך ←" : "Continue →"}
+              </button>
+            </div>
+          )}
         </section>
       )}
 
       {/* STEP 2 — Special requests */}
-      {step === 2 && selectedPlatter && (
+      {step === 2 && (
         <section>
           <button type="button" onClick={() => setStep(1)}
             className="mb-6 font-display text-sm tracking-widest uppercase text-brand-300 hover:text-brand-600 transition">
             ← {uiText("backToPlatter", lang)}
           </button>
           <div className="mb-8 text-center">
-            <p className={`text-2xl text-brand-400 mb-1 ${lang === "he" ? "font-he-script" : "font-script"}`}>
-              {PLATTER_LABELS[lang][selectedPlatter.size].title}
+            <p className="font-script text-xl text-brand-400 mb-1">
+              {selectedItems.map((i) => `${PLATTER_LABELS[lang][i.size].title}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(" · ")}
             </p>
             <h2 className={`text-5xl tracking-wide text-brand-600 uppercase ${lang === "he" ? "font-he-display" : "font-display"}`}>
               {uiText("pickFruitsTitle", lang)}
@@ -413,7 +462,7 @@ export function OrderForm() {
       )}
 
       {/* STEP 4 — Payment */}
-      {step === 4 && selectedPlatter && (
+      {step === 4 && hasItems && (
         <section>
           <button type="button" onClick={() => setStep(3)}
             className="mb-6 font-display text-sm tracking-widest uppercase text-brand-300 hover:text-brand-600 transition">
@@ -431,8 +480,18 @@ export function OrderForm() {
                 {uiText("orderSummary", lang)}
               </h3>
               <dl className="space-y-4 text-sm">
+                {/* Platters */}
+                {selectedItems.map((item) => (
+                  <div key={item.size} className="flex justify-between border-b border-cream-blush pb-4">
+                    <dt className="font-display text-xs tracking-widest uppercase text-brand-300">
+                      {PLATTER_LABELS[lang][item.size].title}
+                      {item.quantity > 1 && ` ×${item.quantity}`}
+                    </dt>
+                    <dd className="font-medium text-brand-600">₪{item.price * item.quantity}</dd>
+                  </div>
+                ))}
+                {/* Other details */}
                 {[
-                  { label: uiText("platter", lang), value: PLATTER_LABELS[lang][selectedPlatter.size].title },
                   { label: uiText("name", lang), value: name },
                   { label: uiText("deliveryDay", lang), value: deliveryDay ? DAY_LABELS[lang][deliveryDay] : "" },
                   { label: uiText("deliveryTime", lang), value: deliveryTime ? formatTimeSlot(deliveryTime, lang) : "" },
@@ -445,8 +504,8 @@ export function OrderForm() {
                   </div>
                 ) : null)}
                 <div className="flex justify-between pt-1">
-                  <dt className="font-display text-xs tracking-widest uppercase text-brand-300">{uiText("price", lang)}</dt>
-                  <dd className="font-script text-3xl text-gold">₪{selectedPlatter.price}</dd>
+                  <dt className="font-display text-xs tracking-widest uppercase text-brand-300">{uiText("total", lang)}</dt>
+                  <dd className="font-script text-3xl text-gold">₪{totalPrice}</dd>
                 </div>
               </dl>
             </div>

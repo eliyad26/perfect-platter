@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   createOrder,
   getAllOrders,
+  getAllPlatters,
   getDeliverySettings,
-  getPlatter,
 } from "@/lib/db";
-import type { DeliveryDay, PaymentMethod, PlatterSize } from "@/lib/types";
+import type { DeliveryDay, PaymentMethod, PlatterItem, PlatterSize } from "@/lib/types";
 import { isValidTimeSlot } from "@/lib/time-slots";
 import { sendOrderConfirmation } from "@/lib/email";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const name = String(body.name || "").trim();
     const email = String(body.email || "").trim();
     const lang: "en" | "he" = body.lang === "en" ? "en" : "he";
-    const platterSize = body.platterSize as PlatterSize;
+    const items = (body.items || []) as PlatterItem[];
     const specialRequest = String(body.specialRequest || "").trim();
     const deliveryDay = body.deliveryDay as DeliveryDay;
     const deliveryTime = String(body.deliveryTime || "").trim();
@@ -47,8 +47,11 @@ export async function POST(request: NextRequest) {
     const phone = String(body.phone || "").trim();
     const paymentMethod = body.paymentMethod as PaymentMethod;
 
-    if (!VALID_SIZES.includes(platterSize)) {
-      return NextResponse.json({ error: "סוג מגש לא תקין" }, { status: 400 });
+    const validItems = items.filter(
+      (i) => VALID_SIZES.includes(i.size) && Number.isInteger(i.quantity) && i.quantity >= 1
+    );
+    if (!validItems.length) {
+      return NextResponse.json({ error: "נא לבחור לפחות מגש אחד" }, { status: 400 });
     }
     if (!VALID_DAYS.includes(deliveryDay)) {
       return NextResponse.json({ error: "יום משלוח לא תקין" }, { status: 400 });
@@ -77,16 +80,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "שעת משלוח לא תקינה" }, { status: 400 });
     }
 
-    const platter = await getPlatter(platterSize);
-    if (!platter) {
-      return NextResponse.json({ error: "מגש לא נמצא" }, { status: 400 });
-    }
+    const allPlatters = await getAllPlatters();
+    const totalPrice = validItems.reduce((sum, i) => {
+      const p = allPlatters.find((p) => p.size === i.size);
+      return sum + (p?.price ?? 0) * i.quantity;
+    }, 0);
 
     const order = await createOrder({
       name,
       email,
       lang,
-      platterSize,
+      items: validItems,
       specialRequest,
       deliveryTime,
       deliveryDay,
@@ -99,7 +103,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Send confirmation email — fire-and-forget, never blocks the response
-    sendOrderConfirmation(order, platter.price).catch((e) =>
+    sendOrderConfirmation(order, totalPrice).catch((e) =>
       console.error("Email send failed:", e)
     );
 

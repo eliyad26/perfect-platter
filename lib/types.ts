@@ -1,4 +1,9 @@
 export type PlatterSize = "small" | "medium" | "party";
+
+export interface PlatterItem {
+  size: PlatterSize;
+  quantity: number;
+}
 export type DeliveryDay = "wednesday" | "thursday" | "friday";
 export type PaymentMethod = "cash" | "bit";
 
@@ -18,7 +23,7 @@ export interface Order {
   name: string;
   email: string;
   lang: "en" | "he";
-  platterSize: PlatterSize;
+  items: PlatterItem[];
   specialRequest: string;
   deliveryDay: DeliveryDay;
   deliveryTime: string;

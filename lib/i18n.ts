@@ -175,6 +175,10 @@ export const UI = {
     en: "Price",
     he: "מחיר",
   },
+  total: {
+    en: "Total",
+    he: "סה״כ",
+  },
   address: {
     en: "Address",
     he: "כתובת",

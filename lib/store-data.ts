@@ -134,6 +134,11 @@ export function migrateStore(store: Store): { store: Store; changed: boolean } {
       order.specialRequest = legacy?.length ? legacy.join(", ") : "";
       changed = true;
     }
+    if (order.items === undefined) {
+      const legacy = (order as unknown as { platterSize?: string }).platterSize;
+      order.items = legacy ? [{ size: legacy as import("./types").PlatterSize, quantity: 1 }] : [];
+      changed = true;
+    }
     if (order.name === undefined) { order.name = ""; changed = true; }
     if (order.email === undefined) { order.email = ""; changed = true; }
     if (order.lang === undefined) { order.lang = "he"; changed = true; }
