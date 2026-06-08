@@ -5,6 +5,7 @@ import {
   getDeliverySettings,
 } from "@/lib/db";
 import type { DeliveryDay, PaymentMethod, PlatterSize } from "@/lib/types";
+import { isValidTimeSlot } from "@/lib/time-slots";
 import { isAdminAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +31,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const name = String(body.name || "").trim();
+    const email = String(body.email || "").trim();
     const platterSize = body.platterSize as PlatterSize;
     const specialRequest = String(body.specialRequest || "").trim();
     const deliveryDay = body.deliveryDay as DeliveryDay;
+    const deliveryTime = String(body.deliveryTime || "").trim();
     const streetAddress = String(body.streetAddress || "").trim();
     const entrance = String(body.entrance || "").trim();
     const floor = String(body.floor || "").trim();
@@ -49,6 +53,9 @@ export async function POST(request: NextRequest) {
     if (!VALID_PAYMENTS.includes(paymentMethod)) {
       return NextResponse.json({ error: "אמצעי תשלום לא תקין" }, { status: 400 });
     }
+    if (!name || !email) {
+      return NextResponse.json({ error: "נא למלא שם ואימייל" }, { status: 400 });
+    }
     if (!streetAddress || !entrance || !floor || !phone) {
       return NextResponse.json(
         { error: "נא למלא כתובת, כניסה, קומה ומספר טלפון" },
@@ -63,10 +70,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (!isValidTimeSlot(deliveryDay, deliveryTime)) {
+      return NextResponse.json({ error: "שעת משלוח לא תקינה" }, { status: 400 });
+    }
 
     const order = await createOrder({
+      name,
+      email,
       platterSize,
       specialRequest,
+      deliveryTime,
       deliveryDay,
       streetAddress,
       entrance,

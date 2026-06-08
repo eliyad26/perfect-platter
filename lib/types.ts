@@ -15,9 +15,12 @@ export interface PlatterConfig {
 export interface Order {
   id: number;
   createdAt: string;
+  name: string;
+  email: string;
   platterSize: PlatterSize;
   specialRequest: string;
   deliveryDay: DeliveryDay;
+  deliveryTime: string;
   streetAddress: string;
   entrance: string;
   floor: string;

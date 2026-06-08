@@ -134,6 +134,9 @@ export function migrateStore(store: Store): { store: Store; changed: boolean } {
       order.specialRequest = legacy?.length ? legacy.join(", ") : "";
       changed = true;
     }
+    if (order.name === undefined) { order.name = ""; changed = true; }
+    if (order.email === undefined) { order.email = ""; changed = true; }
+    if (order.deliveryTime === undefined) { order.deliveryTime = ""; changed = true; }
   }
 
   if (next.schemaVersion < STORE_SCHEMA_VERSION) {

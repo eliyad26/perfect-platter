@@ -87,6 +87,26 @@ export const UI = {
     en: "Continue to delivery",
     he: "המשך לפרטי משלוח",
   },
+  customerName: {
+    en: "Full name",
+    he: "שם מלא",
+  },
+  customerNamePlaceholder: {
+    en: "Your name",
+    he: "שמך",
+  },
+  customerEmail: {
+    en: "Email",
+    he: "אימייל",
+  },
+  customerEmailPlaceholder: {
+    en: "your@email.com",
+    he: "your@email.com",
+  },
+  deliveryTime: {
+    en: "Delivery time",
+    he: "שעת משלוח",
+  },
   deliveryDetails: {
     en: "Delivery details",
     he: "פרטי משלוח",
@@ -162,6 +182,10 @@ export const UI = {
   specialRequest: {
     en: "Special request",
     he: "בקשה מיוחדת",
+  },
+  name: {
+    en: "Name",
+    he: "שם",
   },
   paymentMethod: {
     en: "Payment method",

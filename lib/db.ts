@@ -53,8 +53,11 @@ export async function updateDeliverySettings(
 }
 
 export async function createOrder(data: {
+  name: string;
+  email: string;
   platterSize: PlatterSize;
   specialRequest: string;
+  deliveryTime: string;
   deliveryDay: Order["deliveryDay"];
   streetAddress: string;
   entrance: string;
@@ -67,8 +70,11 @@ export async function createOrder(data: {
   const order: Order = {
     id: store.nextOrderId++,
     createdAt: new Date().toISOString(),
+    name: data.name,
+    email: data.email,
     platterSize: data.platterSize,
     specialRequest: data.specialRequest,
+    deliveryTime: data.deliveryTime,
     deliveryDay: data.deliveryDay,
     streetAddress: data.streetAddress,
     entrance: data.entrance,

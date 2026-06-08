@@ -15,6 +15,7 @@ import {
   PLATTER_LABELS,
   uiText,
 } from "@/lib/i18n";
+import { TIME_SLOTS, formatTimeSlot } from "@/lib/time-slots";
 import { useI18n } from "@/components/I18nProvider";
 
 type Step = 1 | 2 | 3 | 4 | "success";
@@ -32,6 +33,9 @@ export function OrderForm() {
   const [selectedSize, setSelectedSize] = useState<PlatterSize | null>(null);
   const [specialRequest, setSpecialRequest] = useState("");
   const [deliveryDay, setDeliveryDay] = useState<DeliveryDay | null>(null);
+  const [deliveryTime, setDeliveryTime] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [entrance, setEntrance] = useState("");
   const [floor, setFloor] = useState("");
@@ -70,7 +74,8 @@ export function OrderForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          platterSize: selectedSize, specialRequest, deliveryDay,
+          name, email, platterSize: selectedSize, specialRequest,
+          deliveryDay, deliveryTime,
           streetAddress, entrance, floor, deliveryNote, phone, paymentMethod,
         }),
       });
@@ -240,69 +245,165 @@ export function OrderForm() {
             </div>
           ) : (
             <div className="mx-auto max-w-lg space-y-8">
+
+              {/* Name + Email */}
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
+                    {uiText("customerName", lang)} {uiText("requiredMark", lang)}
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder={uiText("customerNamePlaceholder", lang)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
+                    {uiText("customerEmail", lang)} {uiText("requiredMark", lang)}
+                  </label>
+                  <input
+                    type="email"
+                    className="input-field"
+                    placeholder={uiText("customerEmailPlaceholder", lang)}
+                    dir="ltr"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Delivery day */}
               <div>
                 <label className="mb-3 block font-display text-sm tracking-widest uppercase text-brand-400">
                   {uiText("deliveryDay", lang)} {uiText("requiredMark", lang)}
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {availableDays.map((day) => (
-                    <button key={day} type="button" onClick={() => setDeliveryDay(day)}
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => { setDeliveryDay(day); setDeliveryTime(""); }}
                       className={`flex-1 border-2 py-3 font-display text-lg tracking-widest uppercase transition ${
                         deliveryDay === day
                           ? "border-brand-600 bg-brand-600 text-white"
                           : "border-cream-blush bg-cream-warm text-brand-600 hover:border-brand-600"
-                      }`}>
+                      }`}
+                    >
                       {DAY_LABELS[lang][day]}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {[
-                { label: uiText("streetAddress", lang), ph: uiText("streetPlaceholder", lang), val: streetAddress, set: setStreetAddress, req: true },
-              ].map(({ label, ph, val, set, req }) => (
-                <div key={label}>
-                  <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
-                    {label} {req && uiText("requiredMark", lang)}
+              {/* Time slot — appears once a day is chosen */}
+              {deliveryDay && (
+                <div>
+                  <label className="mb-3 block font-display text-sm tracking-widest uppercase text-brand-400">
+                    {uiText("deliveryTime", lang)} {uiText("requiredMark", lang)}
                   </label>
-                  <input type="text" className="input-field" placeholder={ph} value={val} onChange={(e) => set(e.target.value)} />
-                </div>
-              ))}
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                {[
-                  { label: uiText("entrance", lang), ph: uiText("entrancePlaceholder", lang), val: entrance, set: setEntrance },
-                  { label: uiText("floor", lang), ph: uiText("floorPlaceholder", lang), val: floor, set: setFloor },
-                ].map(({ label, ph, val, set }) => (
-                  <div key={label}>
-                    <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
-                      {label} {uiText("requiredMark", lang)}
-                    </label>
-                    <input type="text" className="input-field" placeholder={ph} value={val} onChange={(e) => set(e.target.value)} />
+                  <div className="flex flex-wrap gap-3">
+                    {TIME_SLOTS[deliveryDay].map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setDeliveryTime(slot)}
+                        className={`border-2 px-6 py-3 font-display text-sm tracking-widest uppercase transition hover:-translate-y-0.5 ${
+                          deliveryTime === slot
+                            ? "border-brand-600 bg-brand-600 text-white shadow-md"
+                            : "border-cream-blush bg-cream-warm text-brand-600 hover:border-brand-600 hover:shadow-sm"
+                        }`}
+                      >
+                        {formatTimeSlot(slot, lang)}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* Street address */}
+              <div>
+                <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
+                  {uiText("streetAddress", lang)} {uiText("requiredMark", lang)}
+                </label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder={uiText("streetPlaceholder", lang)}
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
+                />
               </div>
 
+              {/* Entrance + Floor */}
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
+                    {uiText("entrance", lang)} {uiText("requiredMark", lang)}
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder={uiText("entrancePlaceholder", lang)}
+                    value={entrance}
+                    onChange={(e) => setEntrance(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
+                    {uiText("floor", lang)} {uiText("requiredMark", lang)}
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder={uiText("floorPlaceholder", lang)}
+                    value={floor}
+                    onChange={(e) => setFloor(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Delivery note */}
               <div>
                 <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
                   {uiText("deliveryNote", lang)}
                 </label>
-                <textarea className="input-field min-h-[80px] resize-y" placeholder={uiText("deliveryNotePlaceholder", lang)}
-                  value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} />
+                <textarea
+                  className="input-field min-h-[80px] resize-y"
+                  placeholder={uiText("deliveryNotePlaceholder", lang)}
+                  value={deliveryNote}
+                  onChange={(e) => setDeliveryNote(e.target.value)}
+                />
               </div>
 
+              {/* Phone */}
               <div>
                 <label className="mb-2 block font-display text-sm tracking-widest uppercase text-brand-400">
                   {uiText("phone", lang)} {uiText("requiredMark", lang)}
                 </label>
-                <input type="tel" className="input-field" placeholder="050-0000000" dir="ltr"
-                  value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <input
+                  type="tel"
+                  className="input-field"
+                  placeholder="050-0000000"
+                  dir="ltr"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
 
               <div className="flex justify-center pt-2">
-                <button type="button" className="btn-primary"
-                  disabled={!deliveryDay || !streetAddress || !entrance || !floor || !phone}
-                  onClick={() => setStep(4)}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={
+                    !name.trim() || !email.trim() ||
+                    !deliveryDay || !deliveryTime ||
+                    !streetAddress || !entrance || !floor || !phone
+                  }
+                  onClick={() => setStep(4)}
+                >
                   {uiText("continueToPayment", lang)}
                 </button>
               </div>
@@ -332,7 +433,9 @@ export function OrderForm() {
               <dl className="space-y-4 text-sm">
                 {[
                   { label: uiText("platter", lang), value: PLATTER_LABELS[lang][selectedPlatter.size].title },
+                  { label: uiText("name", lang), value: name },
                   { label: uiText("deliveryDay", lang), value: deliveryDay ? DAY_LABELS[lang][deliveryDay] : "" },
+                  { label: uiText("deliveryTime", lang), value: deliveryTime ? formatTimeSlot(deliveryTime, lang) : "" },
                   { label: uiText("address", lang), value: `${streetAddress} — ${uiText("entrance", lang)} ${entrance}, ${uiText("floor", lang)} ${floor}` },
                   ...(specialRequest ? [{ label: uiText("specialRequest", lang), value: specialRequest }] : []),
                 ].map(({ label, value }) => value ? (

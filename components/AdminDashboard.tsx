@@ -14,6 +14,7 @@ import {
   PLATTER_LABELS,
   type Lang,
 } from "@/lib/i18n";
+import { formatTimeSlot } from "@/lib/time-slots";
 import { useI18n } from "@/components/I18nProvider";
 
 const STATUS_LABELS: Record<Lang, Record<Order["status"], string>> = {
@@ -274,12 +275,17 @@ function OrdersTab({
         <article key={order.id} className="card">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <span className="text-lg font-bold">#{order.id}</span>
-              <span
-                className={`mr-3 rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[order.status]}`}
-              >
-                {STATUS_LABELS[lang][order.status]}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-lg font-bold">#{order.id}</span>
+                {order.name && (
+                  <span className="text-base font-semibold text-stone-700">{order.name}</span>
+                )}
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[order.status]}`}
+                >
+                  {STATUS_LABELS[lang][order.status]}
+                </span>
+              </div>
               <p className="mt-1 text-xs text-stone-400">
                 {new Date(order.createdAt).toLocaleString("he-IL")}
               </p>
@@ -311,6 +317,22 @@ function OrdersTab({
               <dt className="text-stone-500">{lang === "he" ? "יום משלוח" : "Delivery day"}</dt>
               <dd className="font-medium">{DAY_LABELS[lang][order.deliveryDay]}</dd>
             </div>
+            {order.deliveryTime && (
+              <div>
+                <dt className="text-stone-500">{lang === "he" ? "שעת משלוח" : "Delivery time"}</dt>
+                <dd className="font-medium">{formatTimeSlot(order.deliveryTime, lang)}</dd>
+              </div>
+            )}
+            {order.email && (
+              <div>
+                <dt className="text-stone-500">{lang === "he" ? "אימייל" : "Email"}</dt>
+                <dd className="font-medium">
+                  <a href={`mailto:${order.email}`} className="text-brand-600 hover:underline">
+                    {order.email}
+                  </a>
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-stone-500">{lang === "he" ? "טלפון" : "Phone"}</dt>
               <dd className="font-medium" dir="ltr">
