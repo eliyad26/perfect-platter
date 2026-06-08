@@ -74,7 +74,7 @@ export function OrderForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name, email, platterSize: selectedSize, specialRequest,
+          name, email, lang, platterSize: selectedSize, specialRequest,
           deliveryDay, deliveryTime,
           streetAddress, entrance, floor, deliveryNote, phone, paymentMethod,
         }),

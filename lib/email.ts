@@ -1,24 +1,63 @@
 import type { Order } from "./types";
+import type { Lang } from "./i18n";
 import { formatTimeSlot } from "./time-slots";
 
 const FROM =
   process.env.FROM_EMAIL ?? "Perfect Platter <onboarding@resend.dev>";
 
-const DAY_HE: Record<string, string> = {
-  wednesday: "רביעי",
-  thursday: "חמישי",
-  friday: "שישי",
-};
-
-const PLATTER_HE: Record<string, string> = {
-  small: "מגש קטן",
-  medium: "מגש בינוני",
-  party: "מגש מסיבה",
-};
-
-const PAYMENT_HE: Record<string, string> = {
-  cash: "מזומן",
-  bit: "ביט",
+const T = {
+  he: {
+    dir: "rtl",
+    htmlLang: "he",
+    confirmationLabel: "אישור הזמנה",
+    greeting: (name: string) => `היי ${name}! 🍓`,
+    body: "המייל הזה הוא אישור ההזמנה שלך.",
+    thanks: "תודה שבחרתם ב-Perfect Platter!",
+    orderLabel: "הזמנה מספר",
+    labels: {
+      platter: "מגש",
+      day: "יום משלוח",
+      time: "שעת משלוח",
+      address: "כתובת",
+      note: "הערה",
+      special: "בקשה מיוחדת",
+      payment: "תשלום",
+      phone: "טלפון",
+    },
+    footer: "יש שאלות? פשוט ענו למייל הזה.\nתודה שבחרתם ב-Perfect Platter 🍉",
+    subject: (id: number) => `הזמנה #${id} התקבלה – Perfect Platter 🍓`,
+    platter: { small: "מגש קטן", medium: "מגש בינוני", party: "מגש מסיבה" },
+    day: { wednesday: "רביעי", thursday: "חמישי", friday: "שישי" },
+    payment: { cash: "מזומן", bit: "ביט" },
+    entrance: (e: string) => `כניסה ${e}`,
+    floor: (f: string) => `קומה ${f}`,
+  },
+  en: {
+    dir: "ltr",
+    htmlLang: "en",
+    confirmationLabel: "Order Confirmation",
+    greeting: (name: string) => `Hi ${name}! 🍓`,
+    body: "This email confirms your order.",
+    thanks: "Thank you for choosing Perfect Platter!",
+    orderLabel: "Order number",
+    labels: {
+      platter: "Platter",
+      day: "Delivery day",
+      time: "Delivery time",
+      address: "Address",
+      note: "Note",
+      special: "Special request",
+      payment: "Payment",
+      phone: "Phone",
+    },
+    footer: "Questions? Just reply to this email.\nThank you for choosing Perfect Platter 🍉",
+    subject: (id: number) => `Order #${id} Confirmed – Perfect Platter 🍓`,
+    platter: { small: "Small Platter", medium: "Medium Platter", party: "Party Platter" },
+    day: { wednesday: "Wednesday", thursday: "Thursday", friday: "Friday" },
+    payment: { cash: "Cash", bit: "Bit" },
+    entrance: (e: string) => `Entrance ${e}`,
+    floor: (f: string) => `Floor ${f}`,
+  },
 };
 
 function row(label: string, value: string) {
@@ -29,27 +68,39 @@ function row(label: string, value: string) {
     </tr>`;
 }
 
-function buildHtml(order: Order, price: number): string {
-  const platterName = PLATTER_HE[order.platterSize] ?? order.platterSize;
-  const dayName = DAY_HE[order.deliveryDay] ?? order.deliveryDay;
-  const timeLabel = order.deliveryTime
-    ? formatTimeSlot(order.deliveryTime, "he")
-    : "";
-  const paymentLabel = PAYMENT_HE[order.paymentMethod] ?? order.paymentMethod;
+function divider() {
+  return `<tr><td colspan="2" style="border-top:1px solid #ede5dc;"></td></tr>`;
+}
+
+function escHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildHtml(order: Order, price: number, lang: Lang): string {
+  const t = T[lang];
+
+  const platterName = t.platter[order.platterSize as keyof typeof t.platter] ?? order.platterSize;
+  const dayName = t.day[order.deliveryDay as keyof typeof t.day] ?? order.deliveryDay;
+  const timeLabel = order.deliveryTime ? formatTimeSlot(order.deliveryTime, lang) : "";
+  const paymentLabel = t.payment[order.paymentMethod as keyof typeof t.payment] ?? order.paymentMethod;
   const address = [
     order.streetAddress,
-    order.entrance ? `כניסה ${order.entrance}` : "",
-    order.floor ? `קומה ${order.floor}` : "",
-  ]
-    .filter(Boolean)
-    .join(", ");
+    order.entrance ? t.entrance(order.entrance) : "",
+    order.floor ? t.floor(order.floor) : "",
+  ].filter(Boolean).map(escHtml).join(", ");
+
+  const footerLines = t.footer.split("\n").join("<br/>");
 
   return `<!DOCTYPE html>
-<html dir="rtl" lang="he">
+<html dir="${t.dir}" lang="${t.htmlLang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>אישור הזמנה – Perfect Platter</title>
+  <title>${t.confirmationLabel} – Perfect Platter</title>
 </head>
 <body style="margin:0;padding:0;background:#f5f0ea;font-family:Georgia,'Times New Roman',serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0ea;padding:48px 16px;">
@@ -61,7 +112,7 @@ function buildHtml(order: Order, price: number): string {
         <tr>
           <td style="padding:40px 40px 28px;text-align:center;background:#faf7f4;border-bottom:1px solid #ede5dc;">
             <p style="margin:0 0 4px;font-size:12px;letter-spacing:3px;color:#b08060;text-transform:uppercase;">
-              אישור הזמנה
+              ${t.confirmationLabel}
             </p>
             <h1 style="margin:0;font-size:30px;letter-spacing:5px;color:#3d2c1e;text-transform:uppercase;">
               PERFECT Platter
@@ -73,11 +124,10 @@ function buildHtml(order: Order, price: number): string {
         <tr>
           <td style="padding:36px 40px 8px;text-align:center;">
             <p style="margin:0;font-size:22px;color:#3d2c1e;">
-              היי ${escHtml(order.name)}! 🍓
+              ${t.greeting(escHtml(order.name))}
             </p>
             <p style="margin:12px 0 0;font-size:15px;line-height:1.7;color:#6b5445;">
-              המייל הזה הוא אישור ההזמנה שלך.<br/>
-              תודה שבחרתם ב-Perfect Platter!
+              ${t.body}<br/>${t.thanks}
             </p>
           </td>
         </tr>
@@ -86,7 +136,7 @@ function buildHtml(order: Order, price: number): string {
         <tr>
           <td style="padding:24px 40px 8px;text-align:center;">
             <span style="display:inline-block;background:#faf7f4;border:2px solid #ede5dc;padding:8px 28px;font-size:13px;letter-spacing:2px;color:#8a7060;text-transform:uppercase;">
-              הזמנה מספר&nbsp;
+              ${t.orderLabel}&nbsp;
               <strong style="color:#3d2c1e;font-size:18px;">#${order.id}</strong>
             </span>
           </td>
@@ -97,17 +147,17 @@ function buildHtml(order: Order, price: number): string {
           <td style="padding:24px 40px 32px;">
             <table width="100%" cellpadding="0" cellspacing="0"
               style="border:1px solid #ede5dc;border-collapse:collapse;">
-              ${row("מגש", `${platterName} — ₪${price}`)}
-              <tr><td colspan="2" style="border-top:1px solid #ede5dc;"></td></tr>
-              ${row("יום משלוח", dayName)}
-              ${row("שעת משלוח", timeLabel)}
-              <tr><td colspan="2" style="border-top:1px solid #ede5dc;"></td></tr>
-              ${row("כתובת", escHtml(address))}
-              ${order.deliveryNote ? `<tr><td colspan="2" style="border-top:1px solid #ede5dc;"></td></tr>${row("הערה", escHtml(order.deliveryNote))}` : ""}
-              ${order.specialRequest ? `<tr><td colspan="2" style="border-top:1px solid #ede5dc;"></td></tr>${row("בקשה מיוחדת", escHtml(order.specialRequest))}` : ""}
-              <tr><td colspan="2" style="border-top:1px solid #ede5dc;"></td></tr>
-              ${row("תשלום", paymentLabel)}
-              ${row("טלפון", order.phone)}
+              ${row(t.labels.platter, `${platterName} — ₪${price}`)}
+              ${divider()}
+              ${row(t.labels.day, dayName)}
+              ${row(t.labels.time, timeLabel)}
+              ${divider()}
+              ${row(t.labels.address, address)}
+              ${order.deliveryNote ? `${divider()}${row(t.labels.note, escHtml(order.deliveryNote))}` : ""}
+              ${order.specialRequest ? `${divider()}${row(t.labels.special, escHtml(order.specialRequest))}` : ""}
+              ${divider()}
+              ${row(t.labels.payment, paymentLabel)}
+              ${row(t.labels.phone, order.phone)}
             </table>
           </td>
         </tr>
@@ -116,8 +166,7 @@ function buildHtml(order: Order, price: number): string {
         <tr>
           <td style="padding:28px 40px;text-align:center;background:#faf7f4;border-top:1px solid #ede5dc;">
             <p style="margin:0;font-size:13px;color:#a08878;line-height:1.8;">
-              יש שאלות? פשוט ענו למייל הזה.<br/>
-              תודה שבחרתם ב-Perfect Platter 🍉
+              ${footerLines}
             </p>
           </td>
         </tr>
@@ -129,19 +178,14 @@ function buildHtml(order: Order, price: number): string {
 </html>`;
 }
 
-function escHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 export async function sendOrderConfirmation(
   order: Order,
   price: number
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) return; // silently skip if not configured
+  if (!process.env.RESEND_API_KEY) return;
+
+  const lang: Lang = order.lang ?? "he";
+  const t = T[lang];
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -149,7 +193,7 @@ export async function sendOrderConfirmation(
   await resend.emails.send({
     from: FROM,
     to: order.email,
-    subject: `הזמנה #${order.id} התקבלה – Perfect Platter 🍓`,
-    html: buildHtml(order, price),
+    subject: t.subject(order.id),
+    html: buildHtml(order, price, lang),
   });
 }

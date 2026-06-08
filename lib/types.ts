@@ -17,6 +17,7 @@ export interface Order {
   createdAt: string;
   name: string;
   email: string;
+  lang: "en" | "he";
   platterSize: PlatterSize;
   specialRequest: string;
   deliveryDay: DeliveryDay;

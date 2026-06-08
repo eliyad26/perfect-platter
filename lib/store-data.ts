@@ -136,6 +136,7 @@ export function migrateStore(store: Store): { store: Store; changed: boolean } {
     }
     if (order.name === undefined) { order.name = ""; changed = true; }
     if (order.email === undefined) { order.email = ""; changed = true; }
+    if (order.lang === undefined) { order.lang = "he"; changed = true; }
     if (order.deliveryTime === undefined) { order.deliveryTime = ""; changed = true; }
   }
 

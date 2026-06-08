@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const name = String(body.name || "").trim();
     const email = String(body.email || "").trim();
+    const lang: "en" | "he" = body.lang === "en" ? "en" : "he";
     const platterSize = body.platterSize as PlatterSize;
     const specialRequest = String(body.specialRequest || "").trim();
     const deliveryDay = body.deliveryDay as DeliveryDay;
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
     const order = await createOrder({
       name,
       email,
+      lang,
       platterSize,
       specialRequest,
       deliveryTime,

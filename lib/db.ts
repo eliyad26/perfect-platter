@@ -55,6 +55,7 @@ export async function updateDeliverySettings(
 export async function createOrder(data: {
   name: string;
   email: string;
+  lang: "en" | "he";
   platterSize: PlatterSize;
   specialRequest: string;
   deliveryTime: string;
@@ -72,6 +73,7 @@ export async function createOrder(data: {
     createdAt: new Date().toISOString(),
     name: data.name,
     email: data.email,
+    lang: data.lang,
     platterSize: data.platterSize,
     specialRequest: data.specialRequest,
     deliveryTime: data.deliveryTime,
