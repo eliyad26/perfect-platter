@@ -5,16 +5,18 @@ import {
   getAllPlatters,
   getDeliverySettings,
 } from "@/lib/db";
-import type { DeliveryDay, PaymentMethod, PlatterItem, PlatterSize } from "@/lib/types";
+import type { DeliveryDay, PaymentMethod, PlatterItem, PlatterSize, WineId, WineItem } from "@/lib/types";
 import { isValidTimeSlot } from "@/lib/time-slots";
 import { sendOrderConfirmation } from "@/lib/email";
 import { isAdminAuthenticated } from "@/lib/auth";
+import { WINES } from "@/lib/wines";
 
 export const dynamic = "force-dynamic";
 
 const VALID_DAYS: DeliveryDay[] = ["wednesday", "thursday", "friday"];
 const VALID_SIZES: PlatterSize[] = ["small", "medium", "party"];
 const VALID_PAYMENTS: PaymentMethod[] = ["cash", "bit"];
+const VALID_WINE_IDS: WineId[] = ["light", "classic", "reserve"];
 
 export async function GET() {
   const authed = await isAdminAuthenticated();
@@ -37,6 +39,7 @@ export async function POST(request: NextRequest) {
     const email = String(body.email || "").trim();
     const lang: "en" | "he" = body.lang === "en" ? "en" : "he";
     const items = (body.items || []) as PlatterItem[];
+    const wineItems = (body.wines || []) as WineItem[];
     const specialRequest = String(body.specialRequest || "").trim();
     const deliveryDay = body.deliveryDay as DeliveryDay;
     const deliveryTime = String(body.deliveryTime || "").trim();
@@ -53,6 +56,9 @@ export async function POST(request: NextRequest) {
     if (!validItems.length) {
       return NextResponse.json({ error: "נא לבחור לפחות מגש אחד" }, { status: 400 });
     }
+    const validWineItems = wineItems.filter(
+      (w) => VALID_WINE_IDS.includes(w.id) && Number.isInteger(w.quantity) && w.quantity >= 1
+    );
     if (!VALID_DAYS.includes(deliveryDay)) {
       return NextResponse.json({ error: "יום משלוח לא תקין" }, { status: 400 });
     }
@@ -81,16 +87,22 @@ export async function POST(request: NextRequest) {
     }
 
     const allPlatters = await getAllPlatters();
-    const totalPrice = validItems.reduce((sum, i) => {
+    const platterTotal = validItems.reduce((sum, i) => {
       const p = allPlatters.find((p) => p.size === i.size);
       return sum + (p?.price ?? 0) * i.quantity;
     }, 0);
+    const wineTotal = validWineItems.reduce((sum, w) => {
+      const wine = WINES.find((wn) => wn.id === w.id);
+      return sum + (wine?.price ?? 0) * w.quantity;
+    }, 0);
+    const totalPrice = platterTotal + wineTotal;
 
     const order = await createOrder({
       name,
       email,
       lang,
       items: validItems,
+      wines: validWineItems,
       specialRequest,
       deliveryTime,
       deliveryDay,

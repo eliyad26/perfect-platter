@@ -41,9 +41,9 @@ export default function HomePage() {
     <>
       <div className="urgency-strip">
         {isHe ? (
-          <>הזמן לפני <span className="text-gold font-bold">14:00</span> לקבלת משלוח באותו היום · ירושלים והסביבה</>
+          <>🍓 כל מגש נארז טרי ביום המשלוח · <span className="text-gold font-semibold">פירות עונתיים מובחרים בלבד</span> · ירושלים והסביבה</>
         ) : (
-          <>Order before <span className="text-gold font-bold">2:00 PM</span> for same-day delivery · Jerusalem &amp; surroundings</>
+          <>🍓 Every platter assembled fresh on delivery day · <span className="text-gold font-semibold">Finest seasonal fruit only</span> · Jerusalem area</>
         )}
       </div>
       <Header />

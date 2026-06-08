@@ -1,7 +1,12 @@
 export type PlatterSize = "small" | "medium" | "party";
+export type WineId = "light" | "classic" | "reserve";
 
 export interface PlatterItem {
   size: PlatterSize;
+  quantity: number;
+}
+export interface WineItem {
+  id: WineId;
   quantity: number;
 }
 export type DeliveryDay = "wednesday" | "thursday" | "friday";
@@ -24,6 +29,7 @@ export interface Order {
   email: string;
   lang: "en" | "he";
   items: PlatterItem[];
+  wines: WineItem[];
   specialRequest: string;
   deliveryDay: DeliveryDay;
   deliveryTime: string;

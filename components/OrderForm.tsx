@@ -8,6 +8,7 @@ import type {
   PaymentMethod,
   PlatterConfig,
   PlatterSize,
+  WineId,
 } from "@/lib/types";
 
 import {
@@ -17,6 +18,7 @@ import {
   uiText,
 } from "@/lib/i18n";
 import { TIME_SLOTS, formatTimeSlot } from "@/lib/time-slots";
+import { WINES } from "@/lib/wines";
 import { useI18n } from "@/components/I18nProvider";
 
 type Step = 1 | 2 | 3 | 4 | "success";
@@ -32,6 +34,7 @@ export function OrderForm() {
 
   const [step, setStep] = useState<Step>(1);
   const [quantities, setQuantities] = useState<Record<PlatterSize, number>>({ small: 0, medium: 0, party: 0 });
+  const [wineQty, setWineQty] = useState<Record<WineId, number>>({ light: 0, classic: 0, reserve: 0 });
   const [specialRequest, setSpecialRequest] = useState("");
   const [deliveryDay, setDeliveryDay] = useState<DeliveryDay | null>(null);
   const [deliveryTime, setDeliveryTime] = useState("");
@@ -65,10 +68,21 @@ export function OrderForm() {
     .filter((p) => quantities[p.size] > 0)
     .map((p) => ({ ...p, quantity: quantities[p.size] }));
   const hasItems = selectedItems.length > 0;
-  const totalPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const platterTotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const selectedWines = WINES
+    .filter((w) => wineQty[w.id] > 0)
+    .map((w) => ({ ...w, quantity: wineQty[w.id] }));
+  const wineTotal = selectedWines.reduce((sum, w) => sum + w.price * w.quantity, 0);
+
+  const totalPrice = platterTotal + wineTotal;
 
   function updateQty(size: PlatterSize, delta: number) {
     setQuantities((prev) => ({ ...prev, [size]: Math.max(0, (prev[size] || 0) + delta) }));
+  }
+
+  function updateWineQty(id: WineId, delta: number) {
+    setWineQty((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] || 0) + delta) }));
   }
 
   const availableDays = (["wednesday", "thursday", "friday"] as DeliveryDay[]).filter(
@@ -81,11 +95,12 @@ export function OrderForm() {
     setError("");
     try {
       const items = selectedItems.map((i) => ({ size: i.size, quantity: i.quantity }));
+      const wines = selectedWines.map((w) => ({ id: w.id, quantity: w.quantity }));
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name, email, lang, items, specialRequest,
+          name, email, lang, items, wines, specialRequest,
           deliveryDay, deliveryTime,
           streetAddress, entrance, floor, deliveryNote, phone, paymentMethod,
         }),
@@ -222,6 +237,89 @@ export function OrderForm() {
                 </div>
               );
             })}
+          </div>
+
+          {/* ── Wine upsell ── */}
+          <div className="mt-14">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex-1 border-t border-cream-blush" />
+              <div className="text-center px-2">
+                <p className={`text-2xl text-brand-500 ${lang === "he" ? "font-he-script" : "font-script"}`}>
+                  יקב הר חברון
+                </p>
+                <p className="font-display text-[10px] tracking-widest uppercase text-brand-300 mt-0.5">
+                  {lang === "he" ? "הוסיפו בקבוק יין להזמנה (אופציונלי)" : "Add a bottle of wine · optional"}
+                </p>
+              </div>
+              <div className="flex-1 border-t border-cream-blush" />
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-3">
+              {WINES.map((wine) => {
+                const qty = wineQty[wine.id] || 0;
+                return (
+                  <div
+                    key={wine.id}
+                    className={`text-center border-2 bg-cream-warm overflow-hidden transition-all ${
+                      qty > 0 ? "border-brand-600 shadow-lg" : "border-cream-blush hover:border-brand-200"
+                    }`}
+                  >
+                    {/* Wine image area */}
+                    <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-red-50 via-rose-50 to-amber-50 flex flex-col items-center justify-center gap-2">
+                      <span className="text-6xl leading-none select-none">{wine.emoji}</span>
+                      <span className="font-display text-[9px] tracking-[0.2em] uppercase text-brand-300">
+                        יקב הר חברון
+                      </span>
+                    </div>
+
+                    <div className="p-5 border-t-2 border-cream-blush">
+                      <p className="font-display text-[10px] tracking-widest uppercase text-brand-300 mb-1">
+                        {lang === "he" ? wine.varietyHe : wine.varietyEn}
+                      </p>
+                      <h3 className={`text-lg leading-tight tracking-wide text-brand-600 ${lang === "he" ? "font-he-display" : "font-display"}`}>
+                        {lang === "he" ? wine.nameHe : wine.nameEn}
+                      </h3>
+                      <p className="mt-2 text-xs text-brand-400 leading-relaxed">
+                        {lang === "he" ? wine.descHe : wine.descEn}
+                      </p>
+                      <p className="mt-3 font-script text-2xl text-gold">₪{wine.price}</p>
+
+                      {/* Quantity control */}
+                      <div className="mt-4 flex items-center justify-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => updateWineQty(wine.id, -1)}
+                          disabled={qty === 0}
+                          className="flex h-9 w-9 items-center justify-center border-2 border-brand-200 text-brand-400 text-xl font-bold transition hover:border-brand-600 hover:text-brand-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          −
+                        </button>
+                        <span className="w-6 text-center font-display text-xl text-brand-600">{qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateWineQty(wine.id, +1)}
+                          className="flex h-9 w-9 items-center justify-center border-2 border-brand-200 text-brand-400 text-xl font-bold transition hover:border-brand-600 hover:text-brand-600"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {qty > 0 && (
+                        <p className="mt-3 font-display text-xs tracking-widest text-brand-400 uppercase">
+                          {lang === "he" ? "סה״כ" : "Subtotal"}: ₪{wine.price * qty}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="mt-4 text-center text-xs text-brand-300 tracking-wide">
+              {lang === "he"
+                ? "כל הייינות כשרים למהדרין · המחיר כולל דמי שירות"
+                : "All wines are strictly kosher · Price includes service fee"}
+            </p>
           </div>
 
           {hasItems && (
@@ -488,6 +586,16 @@ export function OrderForm() {
                       {item.quantity > 1 && ` ×${item.quantity}`}
                     </dt>
                     <dd className="font-medium text-brand-600">₪{item.price * item.quantity}</dd>
+                  </div>
+                ))}
+                {/* Wines */}
+                {selectedWines.map((wine) => (
+                  <div key={wine.id} className="flex justify-between border-b border-cream-blush pb-4">
+                    <dt className="font-display text-xs tracking-widest uppercase text-brand-300">
+                      🍷 {lang === "he" ? wine.nameHe : wine.nameEn}
+                      {wine.quantity > 1 && ` ×${wine.quantity}`}
+                    </dt>
+                    <dd className="font-medium text-brand-600">₪{wine.price * wine.quantity}</dd>
                   </div>
                 ))}
                 {/* Other details */}
