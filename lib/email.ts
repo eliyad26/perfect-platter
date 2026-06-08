@@ -1,8 +1,5 @@
-import { Resend } from "resend";
 import type { Order } from "./types";
 import { formatTimeSlot } from "./time-slots";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM =
   process.env.FROM_EMAIL ?? "Perfect Platter <onboarding@resend.dev>";
@@ -145,6 +142,9 @@ export async function sendOrderConfirmation(
   price: number
 ): Promise<void> {
   if (!process.env.RESEND_API_KEY) return; // silently skip if not configured
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   await resend.emails.send({
     from: FROM,
