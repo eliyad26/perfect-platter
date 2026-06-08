@@ -76,8 +76,8 @@ function buildHtml(order: Order, price: number): string {
               היי ${escHtml(order.name)}! 🍓
             </p>
             <p style="margin:12px 0 0;font-size:15px;line-height:1.7;color:#6b5445;">
-              קיבלנו את ההזמנה שלך ואנחנו כבר מתכוננים.<br/>
-              ניצור איתך קשר בקרוב לאישור סופי.
+              המייל הזה הוא אישור ההזמנה שלך.<br/>
+              תודה שבחרתם ב-Perfect Platter!
             </p>
           </td>
         </tr>
