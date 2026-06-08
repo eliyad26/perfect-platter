@@ -3,9 +3,11 @@ import {
   createOrder,
   getAllOrders,
   getDeliverySettings,
+  getPlatter,
 } from "@/lib/db";
 import type { DeliveryDay, PaymentMethod, PlatterSize } from "@/lib/types";
 import { isValidTimeSlot } from "@/lib/time-slots";
+import { sendOrderConfirmation } from "@/lib/email";
 import { isAdminAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +76,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "שעת משלוח לא תקינה" }, { status: 400 });
     }
 
+    const platter = await getPlatter(platterSize);
+    if (!platter) {
+      return NextResponse.json({ error: "מגש לא נמצא" }, { status: 400 });
+    }
+
     const order = await createOrder({
       name,
       email,
@@ -88,6 +95,11 @@ export async function POST(request: NextRequest) {
       phone,
       paymentMethod,
     });
+
+    // Send confirmation email — fire-and-forget, never blocks the response
+    sendOrderConfirmation(order, platter.price).catch((e) =>
+      console.error("Email send failed:", e)
+    );
 
     return NextResponse.json({ success: true, order });
   } catch (e) {
