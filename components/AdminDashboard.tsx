@@ -15,7 +15,6 @@ import {
   type Lang,
 } from "@/lib/i18n";
 import { formatTimeSlot } from "@/lib/time-slots";
-import { WINES } from "@/lib/wines";
 import { useI18n } from "@/components/I18nProvider";
 
 const STATUS_LABELS: Record<Lang, Record<Order["status"], string>> = {
@@ -270,15 +269,10 @@ function OrdersTab({
   return (
     <div className="space-y-4">
       {orders.map((order) => {
-        const platterTotal = order.items?.reduce((sum, item) => {
+        const total = order.items?.reduce((sum, item) => {
           const p = platters.find((p) => p.size === item.size);
           return sum + (p?.price ?? 0) * item.quantity;
-        }, 0) ?? 0;
-        const wineTotal = (order.wines ?? []).reduce((sum, w) => {
-          const wine = WINES.find((wn) => wn.id === w.id);
-          return sum + (wine?.price ?? 0) * w.quantity;
-        }, 0);
-        const total = platterTotal + wineTotal;
+        }, 0) ?? null;
         return (
         <article key={order.id} className="card">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -327,24 +321,11 @@ function OrdersTab({
                     </div>
                   );
                 })}
-                {(order.wines ?? []).length > 0 && (
-                  <div className="mt-1.5 pt-1.5 border-t border-stone-100 space-y-0.5">
-                    {(order.wines ?? []).map((w) => {
-                      const wine = WINES.find((wn) => wn.id === w.id);
-                      if (!wine) return null;
-                      return (
-                        <div key={w.id} className="text-purple-700">
-                          🍷 {lang === "he" ? wine.nameHe : wine.nameEn}
-                          {w.quantity > 1 && ` ×${w.quantity}`}
-                          {` · ₪${wine.price * w.quantity}`}
-                        </div>
-                      );
-                    })}
+                {total != null && (order.items?.length ?? 0) > 1 && (
+                  <div className="font-bold text-brand-600 pt-1 border-t border-stone-100">
+                    {lang === "he" ? "סה״כ" : "Total"}: ₪{total}
                   </div>
                 )}
-                <div className="font-bold text-brand-600 pt-1 border-t border-stone-100">
-                  {lang === "he" ? "סה״כ" : "Total"}: ₪{total}
-                </div>
               </dd>
             </div>
             <div>

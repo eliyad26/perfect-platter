@@ -1,7 +1,6 @@
 import type { Order } from "./types";
 import type { Lang } from "./i18n";
 import { formatTimeSlot } from "./time-slots";
-import { WINES } from "./wines";
 
 const FROM =
   process.env.FROM_EMAIL ?? "Perfect Platter <onboarding@resend.dev>";
@@ -17,7 +16,6 @@ const T = {
     orderLabel: "הזמנה מספר",
     labels: {
       platter: "מגש",
-      wine: "יין",
       day: "יום משלוח",
       time: "שעת משלוח",
       address: "כתובת",
@@ -44,7 +42,6 @@ const T = {
     orderLabel: "Order number",
     labels: {
       platter: "Platter",
-      wine: "Wine",
       day: "Delivery day",
       time: "Delivery time",
       address: "Address",
@@ -153,13 +150,6 @@ function buildHtml(order: Order, totalPrice: number, lang: Lang): string {
                 const name = t.platter[item.size as keyof typeof t.platter] ?? item.size;
                 const label = item.quantity > 1 ? `${name} ×${item.quantity}` : name;
                 return row(t.labels.platter, label);
-              }).join("")}
-              ${(order.wines ?? []).map((item) => {
-                const wine = WINES.find((w) => w.id === item.id);
-                if (!wine) return "";
-                const name = lang === "he" ? wine.nameHe : wine.nameEn;
-                const label = item.quantity > 1 ? `${name} ×${item.quantity}` : name;
-                return row(t.labels.wine, escHtml(label));
               }).join("")}
               ${divider()}
               ${row(lang === "he" ? "סה״כ" : "Total", `₪${totalPrice}`)}

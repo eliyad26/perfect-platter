@@ -5,7 +5,6 @@ import type {
   PlatterConfig,
   PlatterItem,
   PlatterSize,
-  WineItem,
 } from "./types";
 import { loadStore, saveStore } from "./storage";
 
@@ -59,7 +58,6 @@ export async function createOrder(data: {
   email: string;
   lang: "en" | "he";
   items: PlatterItem[];
-  wines: WineItem[];
   specialRequest: string;
   deliveryTime: string;
   deliveryDay: Order["deliveryDay"];
@@ -78,7 +76,6 @@ export async function createOrder(data: {
     email: data.email,
     lang: data.lang,
     items: data.items,
-    wines: data.wines,
     specialRequest: data.specialRequest,
     deliveryTime: data.deliveryTime,
     deliveryDay: data.deliveryDay,
