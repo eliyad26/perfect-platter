@@ -102,10 +102,15 @@ export async function POST(request: NextRequest) {
       paymentMethod,
     });
 
-    // Send confirmation email — fire-and-forget, never blocks the response
-    sendOrderConfirmation(order, totalPrice).catch((e) =>
-      console.error("Email send failed:", e)
-    );
+    // Await the confirmation email before responding. On serverless (Netlify),
+    // the function is frozen the instant we return, so a fire-and-forget send
+    // would be killed before it leaves the server. A failure here must not fail
+    // the order, so we swallow and log it.
+    try {
+      await sendOrderConfirmation(order, totalPrice);
+    } catch (e) {
+      console.error("Email send failed:", e);
+    }
 
     return NextResponse.json({ success: true, order });
   } catch (e) {

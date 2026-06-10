@@ -187,7 +187,10 @@ export async function sendOrderConfirmation(
   order: Order,
   price: number
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) return;
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not set — skipping order confirmation email");
+    return;
+  }
 
   const lang: Lang = order.lang ?? "he";
   const t = T[lang];
