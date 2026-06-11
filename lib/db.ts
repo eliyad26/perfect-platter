@@ -10,7 +10,7 @@ import { loadStore, saveStore } from "./storage";
 
 export async function getAllPlatters(): Promise<PlatterConfig[]> {
   const store = await loadStore();
-  return [...store.platters].sort((a, b) => a.price - b.price);
+  return [...store.platters].sort((a, b) => b.price - a.price);
 }
 
 export async function getPlatter(
